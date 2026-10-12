@@ -48,7 +48,7 @@ footer .navbar { margin-top: 0; }
 <body>
 <div class="titlebar"><div class="inner">
 <h1>mkdir recursive EEXIST results</h1>
-<p class="lead">On Windows, Bun's <code>fs.mkdir(path, { recursive: true })</code> throws EEXIST for an existing directory when a relative path points above the current directory. Compared with Node.js and Deno</p>
+<p class="lead">On Windows, Bun's <code>fs.mkdir(path, { recursive: true })</code> throws EEXIST or ENOENT for an existing directory when a relative path points above the current directory or names the current directory itself. Compared with Node.js and Deno</p>
 <p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-12</p>
 </div></div>
 
@@ -64,7 +64,7 @@ footer .navbar { margin-top: 0; }
 
 <section class="ch01" id="ch01">
 <h1>Summary and environment</h1>
-<p>With <code>recursive: true</code>, <code>fs.mkdir</code> returns without an error when the directory already exists (Node.js behavior). On Windows, Bun throws <code>EEXIST</code> only when the path, <strong>after <code>.</code> and <code>..</code> are collapsed, starts with <code>..</code> (points above the current directory) and the directory already exists</strong>. Node.js and Deno do not.</p>
+<p>With <code>recursive: true</code>, <code>fs.mkdir</code> returns without an error when the directory already exists (Node.js behavior). On Windows, Bun throws <code>EEXIST</code> when the path, <strong>after <code>.</code> and <code>..</code> are collapsed, starts with <code>..</code> (points above the current directory) and the directory already exists</strong>. Paths that name the current directory itself (<code>.</code>, <code>./</code>, <code>inner/..</code>) fail too. Node.js and Deno do not.</p>
 <div class="tablewrap"><table>
 <thead><tr><th>Item</th><th>Value</th></tr></thead>
 <tbody>
@@ -86,6 +86,8 @@ footer .navbar { margin-top: 0; }
 <tr><td><code>mkdirSync('./../exists')</code> / <code>'.\\..\\exists'</code> (starts with <code>./</code>)</td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
 <tr><td><code>mkdirSync('inner/../../exists')</code> (an inner <code>..</code> climbs above)</td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
 <tr><td><code>mkdirSync('../sub/inner')</code> / <code>'../sub/../exists'</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('.')</code> (the current directory itself)</td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('./')</code> / <code>'.\\'</code> / <code>'inner/..'</code> (the current directory itself)</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td></tr>
 <tr><td><code>mkdirSync(absolute path)</code></td><td>✅</td><td>✅</td><td>✅</td></tr>
 <tr><td><code>mkdirSync('inner')</code> / <code>'./inner'</code> / <code>'inner/../inner'</code> (stays inside)</td><td>✅</td><td>✅</td><td>✅</td></tr>
 <tr><td><code>mkdirSync('../new-dir')</code> 1st call (not there yet)</td><td>✅ created</td><td>✅</td><td>✅</td></tr>
@@ -105,15 +107,20 @@ OK   &lt;absolute path&gt;\exists
 OK   inner
 OK   ./inner
 OK   inner/../inner
+NG   .  EEXIST EEXIST: file already exists, mkdir '.'
+NG   ./  ENOENT ENOENT: no such file or directory, mkdir
+NG   .\  ENOENT ENOENT: no such file or directory, mkdir
+NG   inner/..  ENOENT ENOENT: no such file or directory, mkdir
 OK   ../new-dir
 NG   ../new-dir  EEXIST EEXIST: file already exists, mkdir '..\new-dir'
 NG   fs.promises.mkdir ../exists  EEXIST
 NG   fs.mkdir ../exists  EEXIST</code></pre>
 <h2>Findings</h2>
 <ul>
-<li>It happens only when the path, after <code>.</code> and <code>..</code> are collapsed, starts with <code>..</code> (points above the current directory) and the directory exists, with either <code>/</code> or <code>\</code> as the separator</li>
+<li>It happens when the path, after <code>.</code> and <code>..</code> are collapsed, starts with <code>..</code> (points above the current directory) and the directory exists, with either <code>/</code> or <code>\</code> as the separator</li>
 <li>The path does not have to start with <code>..</code>: <code>./../exists</code> and <code>inner/../../exists</code> (an inner <code>..</code> that climbs above) fail too. The path in the error message is the collapsed form (<code>..\exists</code>)</li>
 <li>Paths that stay inside after collapsing (<code>inner/../inner</code>, <code>./inner</code>, <code>inner</code>) and absolute paths work</li>
+<li>Paths that name the current directory itself fail too. <code>.</code> throws <code>EEXIST: file already exists, mkdir '.'</code>; <code>./</code> and <code>.\</code> (with a trailing separator) and <code>inner/..</code> (collapses to the current directory) throw <code>ENOENT: no such file or directory, mkdir</code> (with an empty path). <code>inner/.</code> works</li>
 <li>All three APIs fail: sync, promise and callback</li>
 <li>The <code>warn: internal error: OBJECT_NAME_INVALID</code> line reported in #17332 (Bun 1.2.2) is no longer printed on 1.4.3</li>
 <li>Workaround: pass an absolute path from <code>path.resolve()</code></li>
@@ -125,10 +132,13 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 <p>An issue with the same symptom already exists, and a fix PR is open. <strong>Instead of filing a new issue, we added a comment to the existing one</strong> (<a href="https://github.com/oven-sh/bun/issues/17332#issuecomment-6118179563">the comment posted on 2026-10-12</a>).</p>
 <ul>
 <li><a href="https://github.com/oven-sh/bun/issues/17332">oven-sh/bun#17332</a> Bun crashes when creating duplicate directory in path starting with ../ (opened 2025-02-14, OPEN, labels <code>bug</code> <code>windows</code> <code>node:fs</code>). It reports <code>mkdir</code> from <code>fs/promises</code> only</li>
+<li><a href="https://github.com/oven-sh/bun/issues/44576">oven-sh/bun#44576</a> node:fs: recursive mkdir of "." or ".." throws EEXIST on Windows (opened 2026-10-04, OPEN). Covers the <code>.</code> and <code>..</code> EEXIST only</li>
+<li><a href="https://github.com/oven-sh/bun/pull/40536">oven-sh/bun#40536</a> node:fs: return the namespaced absolute first path created for a relative recursive mkdir on Windows (opened 2026-08-26, OPEN). Joins a relative path onto the cwd and collapses <code>..</code> first</li>
+<li><a href="https://github.com/oven-sh/bun/pull/42635">oven-sh/bun#42635</a> fix(node:fs): preserve Win32 semantics in recursive mkdir checks (opened 2026-09-13, OPEN). Its description says the <code>child\..</code> ENOENT remains and is covered by #40536</li>
 <li><a href="https://github.com/oven-sh/bun/pull/42014">oven-sh/bun#42014</a> sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at (opened 2026-09-08, OPEN, review required). Its description says <code>Fixes #17332</code></li>
 </ul>
 <h2>The cause given in PR #42014</h2>
-<p>According to the PR description (we have not read the source):</p>
+<p>According to the PR description:</p>
 <ol>
 <li>Recursive <code>fs.mkdir</code> calls <code>CreateDirectoryW</code>; on <code>EEXIST</code> it asks <code>directory_exists_at_w</code> whether the existing entry is a directory</li>
 <li>That probe calls NT directly. <code>to_nt_path</code>, which builds the name, only flips separators and does not resolve <code>.</code> or <code>..</code>. NT takes <code>..</code> as a literal name, so the probe fails</li>
@@ -136,8 +146,29 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 <li>The recursive walk first collapses <code>.</code> and <code>..</code> lexically. A <code>..</code> left at the start after collapsing cannot be resolved without the directory's path, so it reaches NT as is</li>
 </ol>
 <p>This matches our results: <code>inner/../inner</code> collapses to <code>inner</code> and works, while <code>inner/../../exists</code> collapses to <code>..\exists</code> and fails.</p>
+<h2>Reading the PR #42014 source</h2>
+<p>We read the diff at the head commit <code>cfff26e9a</code>. The fix is in two files, <code>src/paths/classify.rs</code> and <code>src/sys/lib.rs</code>; the rest are tests.</p>
+<ul>
+<li><code>classify.rs</code>: <code>classify_rel_t</code>, which scans path components, gains <code>has_dot_component</code> (some component is exactly <code>.</code> or <code>..</code>). <code>a.b</code> and <code>...</code> are treated as names</li>
+<li><code>lib.rs</code>: new <code>nt_object_name_at</code> and <code>nt_object_name_at_w</code>. If a <code>.</code> or <code>..</code> component exists, the path is resolved against the directory handle with <code>normalize_path_windows</code>; otherwise <code>to_nt_path</code> only flips separators, as before</li>
+<li><code>mkdirat</code>, <code>unlinkat</code>, <code>renameat</code> (the target), <code>exists_at_type</code> and <code>exists_at_type_w</code> now use it. The directory probe (<code>directory_exists_at_w</code>) goes through <code>exists_at_type_w</code>, which is where this bug is fixed</li>
+<li>The code in <code>exists_at_type_nt</code> that trimmed a leading <code>.\</code> is removed (resolution makes it unnecessary)</li>
+<li>The recursive walk (the lexical collapse) is unchanged. For a leading <code>..</code> it keeps, only the comment changes to "<code>mkdirat</code> resolves it"</li>
+<li>The new test in <code>fs-mkdir.test.ts</code> covers <code>.</code>, <code>..</code>, <code>../cwd</code>, <code>../cwd/sub</code>, <code>./sub</code> and a file. It does not cover <code>./</code> with a trailing separator, or <code>sub/..</code> that collapses to the current directory</li>
+</ul>
+<p>What we read matches the PR description.</p>
 <h2>Checked with the PR #42014 build</h2>
-<p>We downloaded the Windows x64 build <code>bun-windows-x64.zip</code> from the PR's CI (<a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>). Its SHA-256 matched the listed value, and its version was <code>1.4.3-canary.1+cfff26e9a</code> (the PR head commit). With this build, all 14 tests and every line of the repro script pass (see the table in <a href="#ch04">How to reproduce</a>).</p>
+<p>We downloaded the Windows x64 build <code>bun-windows-x64.zip</code> from the PR's CI (<a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>). Its SHA-256 matched the listed value, and its version was <code>1.4.3-canary.1+cfff26e9a</code> (the PR head commit). With this build, every path pointing above the current directory and <code>.</code> pass. <strong>The three paths that name the current directory, <code>./</code>, <code>.\</code> and <code>inner/..</code>, still throw <code>ENOENT</code> with this build</strong> (see the table in <a href="#ch04">How to reproduce</a>). We have not looked into why.</p>
+<h2>Checked with other PR builds</h2>
+<p>In the same way, we downloaded the Windows x64 builds of <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> and <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a>. Both SHA-256 values matched the listed ones.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>PR</th><th>Build</th><th>Above the cwd, <code>.</code></th><th><code>./</code>, <code>.\</code>, <code>inner/..</code></th></tr></thead>
+<tbody>
+<tr><td class="nowrap">#40536</td><td><a href="https://buildkite.com/bun/bun/builds/106239">Buildkite #106239</a>, <code>1.4.1-canary.1+8c04559b9</code></td><td>✅</td><td>✅</td></tr>
+<tr><td class="nowrap">#42635</td><td><a href="https://buildkite.com/bun/bun/builds/115200">Buildkite #115200</a>, <code>1.4.3-canary.1+891eb8df5</code></td><td>✅</td><td class="nowrap">❌ ENOENT</td></tr>
+<tr><td class="nowrap">#42014</td><td>Buildkite #113149, <code>1.4.3-canary.1+cfff26e9a</code></td><td>✅</td><td class="nowrap">❌ ENOENT</td></tr>
+</tbody></table></div>
+<p><strong>Of the three PRs, only #40536 fixes every case</strong>. Its build is based on 1.4.1, and the PR has not been updated since 2026-08-26.</p>
 <div class="callout"><strong>Not verified</strong>: whether it happens on Linux or macOS (the PR says its tests pass on Linux before and after the change).</div>
 </section>
 
@@ -153,10 +184,12 @@ deno run -A repro.ts</code></pre>
 <div class="tablewrap"><table>
 <thead><tr><th>Runtime</th><th>Result</th></tr></thead>
 <tbody>
-<tr><td>Node.js v26.11.1</td><td>✅ 14 passed</td></tr>
-<tr><td>Deno 2.9.7</td><td>✅ 14 passed</td></tr>
-<tr><td>Bun 1.4.3</td><td>❌ 4 passed, 10 failed (the 10 paths pointing above the current directory)</td></tr>
-<tr><td>Bun 1.4.3-canary.1+cfff26e9a (PR #42014 build)</td><td>✅ 14 passed</td></tr>
+<tr><td>Node.js v26.11.1</td><td>✅ 18 passed</td></tr>
+<tr><td>Deno 2.9.7</td><td>✅ 18 passed</td></tr>
+<tr><td>Bun 1.4.3</td><td>❌ 4 passed, 14 failed (the 10 paths pointing above the current directory and the 4 naming the current directory)</td></tr>
+<tr><td>Bun 1.4.3-canary.1+cfff26e9a (PR #42014 build)</td><td>❌ 15 passed, 3 failed (<code>./</code>, <code>.\</code>, <code>inner/..</code>)</td></tr>
+<tr><td>Bun 1.4.3-canary.1+891eb8df5 (PR #42635 build)</td><td>❌ 15 passed, 3 failed (<code>./</code>, <code>.\</code>, <code>inner/..</code>)</td></tr>
+<tr><td>Bun 1.4.1-canary.1+8c04559b9 (PR #40536 build)</td><td>✅ 18 passed</td></tr>
 </tbody></table></div>
 </section>
 </div>

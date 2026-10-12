@@ -6,7 +6,7 @@ fs.mkdirSync('sub', { recursive: true });
 fs.mkdirSync('sub/inner', { recursive: true });
 process.chdir('sub');
 for (const p of ['../exists', '..\\exists', './../exists', '.\\..\\exists', 'inner/../../exists', '../sub/inner', '../sub/../exists',
-	path.resolve('../exists'), 'inner', './inner', 'inner/../inner', '../new-dir', '../new-dir']) {
+	path.resolve('../exists'), 'inner', './inner', 'inner/../inner', '.', './', '.\\', 'inner/..', '../new-dir', '../new-dir']) {
 	try { fs.mkdirSync(p, { recursive: true }); console.log('OK   ' + p); }
 	catch (e: any) { console.log('NG   ' + p + '  ' + e.code + ' ' + e.message); }
 }

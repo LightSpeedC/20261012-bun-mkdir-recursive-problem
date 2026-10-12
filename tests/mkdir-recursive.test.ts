@@ -1,5 +1,6 @@
 // fs.mkdir(path, { recursive: true }) は、既にあるフォルダでは何もせずに返る（Node の仕様）。
 // Bun（Windows）は、`.` ・ `..` を畳んだパスが `..` で始まると EEXIST を投げる（oven-sh/bun#17332）。
+// カレント自身を指すパス（`.` ・ `./` ・ `inner/..`）でも失敗する。
 // node・deno・bun で同じテストを流し、Bun だけが落ちることを示す。
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -39,6 +40,14 @@ test('mkdirSync(絶対パス) は既にあるフォルダで例外を投げな�
 // 先頭が `..` でなくても、途中の `..` で上に出れば起きる
 for (const p of ['../exists', '..\\exists', './../exists', '.\\..\\exists', 'inner/../../exists', '../sub/inner', '../sub/../exists']) {
 	test(`mkdirSync('${p.replace(/\\/g, '\\\\')}') は既にあるフォルダで例外を投げない`, () => {
+		assert.doesNotThrow(() => fs.mkdirSync(p, { recursive: true }));
+	});
+}
+
+// カレント自身を指すパス。`.` は Bun 1.4.3 で EEXIST（#42014 で直る）。
+// 末尾に区切りが付く `./` ・ `.\`、畳むとカレントになる `inner/..` は、#42014 ・ #42635 のビルドでも ENOENT になる（#40536 のビルドでは通る）
+for (const p of ['.', './', '.\\', 'inner/..']) {
+	test(`mkdirSync('${p.replace(/\\/g, '\\\\')}')（カレント自身）は例外を投げない`, () => {
 		assert.doesNotThrow(() => fs.mkdirSync(p, { recursive: true }));
 	});
 }

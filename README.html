@@ -48,20 +48,21 @@ footer .navbar { margin-top: 0; }
 <body>
 <div class="titlebar"><div class="inner">
 <h1>Bun mkdir recursive problem</h1>
-<p class="lead">On Windows, Bun's fs.mkdir(path, { recursive: true }) throws EEXIST for an existing directory when a relative path points above the current directory, compared with Node.js and Deno</p>
+<p class="lead">On Windows, Bun's fs.mkdir(path, { recursive: true }) throws EEXIST or ENOENT for an existing directory when a relative path points above the current directory or names the current directory itself, compared with Node.js and Deno</p>
 <p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-12</p>
 </div></div>
 
 <div class="wrap">
 <div class="navbar"><a href="../" title="Home">⌂</a><a href="README-JP.html" title="日本語">日本語</a></div>
 
-<p>With <code>recursive: true</code>, <code>fs.mkdir</code> must return without an error when the directory already exists. On Windows, Bun throws <code>EEXIST</code> when a relative path points above the current directory (<code>../x</code>, <code>./../x</code>, <code>a/../../x</code>). This project records the measurements against Node.js and Deno, and the comment for the existing Bun issue <a href="https://github.com/oven-sh/bun/issues/17332">#17332</a>.</p>
+<p>With <code>recursive: true</code>, <code>fs.mkdir</code> must return without an error when the directory already exists. On Windows, Bun throws <code>EEXIST</code> when a relative path points above the current directory (<code>../x</code>, <code>./../x</code>, <code>a/../../x</code>), and <code>ENOENT</code> when it names the current directory itself (<code>./</code>, <code>a/..</code>). This project records the measurements against Node.js and Deno, and the comment posted on the existing Bun issue <a href="https://github.com/oven-sh/bun/issues/17332">#17332</a>.</p>
 <p>To run the tests on Windows (node, deno and bun must be on PATH): <code>tools\40_test\run-tests.cmd</code></p>
 
 <nav class="toc"><ol>
 <li class="ch01"><a href="#ch01">Research</a></li>
-<li class="ch02"><a href="#ch02">Issue</a></li>
+<li class="ch02"><a href="#ch02">Comment on the issue</a></li>
 <li class="ch03"><a href="#ch03">Related issues</a></li>
+<li class="ch04"><a href="#ch04">Rules</a></li>
 </ol></nav>
 
 <section class="ch01" id="ch01">
@@ -72,7 +73,7 @@ footer .navbar { margin-top: 0; }
 </section>
 
 <section class="ch02" id="ch02">
-<h1>Issue</h1>
+<h1>Comment on the issue</h1>
 <ul>
 <li><a href="issue/bun-17332-comment.html">Comment on bun#17332</a></li>
 </ul>
@@ -83,6 +84,16 @@ footer .navbar { margin-top: 0; }
 <ul>
 <li><a href="https://github.com/oven-sh/bun/issues/17332">oven-sh/bun#17332</a> — Bun crashes when creating duplicate directory in path starting with ../</li>
 <li><a href="https://github.com/oven-sh/bun/pull/42014">oven-sh/bun#42014</a> — sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at (the fix)</li>
+<li><a href="https://github.com/oven-sh/bun/issues/44576">oven-sh/bun#44576</a> — node:fs: recursive mkdir of "." or ".." throws EEXIST on Windows</li>
+<li><a href="https://github.com/oven-sh/bun/pull/42635">oven-sh/bun#42635</a> — fix(node:fs): preserve Win32 semantics in recursive mkdir checks (says the <code>child\..</code> ENOENT remains)</li>
+<li><a href="https://github.com/oven-sh/bun/pull/40536">oven-sh/bun#40536</a> — node:fs: return the namespaced absolute first path created for a relative recursive mkdir on Windows (its build passes every case, including the ENOENT ones)</li>
+</ul>
+</section>
+
+<section class="ch04" id="ch04">
+<h1>Rules</h1>
+<ul>
+<li><a href="notes/90_rules/local-rules.html">Local rules</a> (in Japanese)</li>
 </ul>
 </section>
 </div>

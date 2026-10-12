@@ -1,0 +1,68 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ローカルルール</title>
+<style>
+:root {
+	--navy1: #12224d; --navy2: #2f5fbf; --ink: #1c2330; --ink-soft: #4a5568;
+	--line: #d9dfe8; --code-bg: #f4f6fa; --link: #1a4fa0;
+	--accent: var(--navy1); --accent2: var(--navy2); --soft: #f2f5fb;
+}
+body { margin: 0; background: #fff; color: var(--ink); font-size: 15.5px; line-height: 1.85; font-family: "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif; }
+a { color: var(--link, #1a4fa0); background: transparent; }
+.titlebar { background: linear-gradient(135deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; padding: 34px 30px 30px; }
+.titlebar .inner { max-width: 1600px; margin: 0 auto; }
+.titlebar h1 { font-size: 1.8em; margin: 0 0 6px; color: #fff; }
+.titlebar .lead, .titlebar .date { color: #e6ecf8; background: transparent; font-size: 0.92em; margin: 2px 0; }
+.wrap { max-width: 1600px; margin: 0 auto; padding: 0 30px; }
+.navbar { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.navbar a { display: inline-block; padding: 0 9px; border-radius: 6px; background: linear-gradient(100deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
+.ch01 { --accent: hsl(280,78%,25%); --accent2: hsl(280,58%,55%); --soft: hsl(280,28%,95%); }
+.ch02 { --accent: hsl(0,78%,25%); --accent2: hsl(0,58%,55%); --soft: hsl(0,28%,95%); }
+section { margin: 34px 0; padding: 4px 26px 26px; border-radius: 10px; background: linear-gradient(180deg, var(--soft, #f2f5fb), #fff); color: var(--ink); }
+section h1 { margin: 26px 0 20px; padding: 14px 20px; border-radius: 8px; font-size: 1.45em; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.18); }
+code { background: var(--code-bg, #f4f6fa); border: 1px solid var(--line, #d9dfe8); color: #17335f; padding: 0 4px; border-radius: 4px; font-size: 0.9em; }
+footer { max-width: 1600px; margin: 0 auto; padding: 18px 30px 30px; }
+footer .navbar { margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="titlebar"><div class="inner">
+<h1>ローカルルール</h1>
+<p class="lead">このプロジェクトでだけ通る決めごと。共通ルールと食い違うときは、ここが優先する</p>
+<p class="date">📅 作成: 2026-10-12 / 更新: 2026-10-12</p>
+</div></div>
+
+<div class="wrap">
+<div class="navbar"><a href="../../README-JP.html" title="目次">⌂</a></div>
+
+<section class="ch01" id="ch01">
+<h1>このリポジトリの目的</h1>
+<ul>
+<li><strong>Bun の不具合（Windows の <code>fs.mkdir(path, { recursive: true })</code>）を解決するためにある</strong>。調べて記録するだけでなく、直るところまで持っていくのが目的</li>
+<li>報告で最も重要なのは<strong>修正 PR でも直らないもの</strong>。直るものは短く済ませ、直らないものを先頭に書く</li>
+</ul>
+</section>
+
+<section class="ch02" id="ch02">
+<h1>検証は指示を待たずに行う</h1>
+<p>共通ルールの「指示された範囲だけを実装する」「質問された時の対応」と違う運用にする。<strong>理由</strong>: 検証の結果が無いと、何を報告すべきか決められない。</p>
+<ul>
+<li><strong>次の検証は、指示を待たずに行う</strong>。結果は報告する
+	<ul>
+	<li>関連する issue ・ PR の検索、PR のソースの読み込み</li>
+	<li>関連する PR の CI ビルド（Windows x64）を取得し、SHA-256 を照合して、テスト・再現コードを流す</li>
+	<li>新しいケースを試し、見つけた失敗をテスト（<code>tests/</code>）と再現コード（<code>research/repro.ts</code>）に足す</li>
+	</ul>
+</li>
+<li><strong>検証の結果が変わったら、同じ事実を載せた資料をすべて合わせる</strong>（調査結果・issue の資料・README の英語版と日本語版）。件数やケース名で全体を検索して漏れを探す</li>
+<li><strong>外への書き込みは、従来どおり指示を待つ</strong>。issue ・ PR へのコメント、新しい issue、commit ・ push</li>
+</ul>
+</section>
+</div>
+
+<footer><div class="navbar"><a href="../../README-JP.html" title="目次">⌂</a></div></footer>
+</body>
+</html>
