@@ -22,7 +22,7 @@ Windows でテストを流すには（node ・ deno ・ bun が PATH にある�
 
 ## 2. issue
 
-- [bun#17332 へのコメント（案）](issue/bun-17332-comment-JP.md)
+- [bun#17332 へのコメント](issue/bun-17332-comment-JP.md)
 
 ## 3. 関連する issue
 

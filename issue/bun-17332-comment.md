@@ -1,6 +1,6 @@
-# Comment on bun#17332 (draft)
+# Comment on bun#17332
 
-The text to post on oven-sh/bun#17332. Not posted yet
+The comment posted on oven-sh/bun#17332 on 2026-10-12
 
 > 📅 Created: 2026-10-12 / Updated: 2026-10-12
 
@@ -10,7 +10,7 @@ The text to post on oven-sh/bun#17332. Not posted yet
 
 ## 1. Comment on bun#17332
 
-Post on [oven-sh/bun#17332](https://github.com/oven-sh/bun/issues/17332). The block below is pasted as is.
+Posted on [oven-sh/bun#17332](https://github.com/oven-sh/bun/issues/17332) on 2026-10-12 ([the posted comment](https://github.com/oven-sh/bun/issues/17332#issuecomment-6118179563)). The block below is the text as posted.
 
 ```markdown
 Still reproduces on Bun 1.4.3 (c6da4a4d3), Windows 11 10.0.26300 x64. Some additional data:

@@ -22,7 +22,7 @@ To run the tests on Windows (node, deno and bun must be on PATH): `tools\40_test
 
 ## 2. Issue
 
-- [Comment on bun#17332 (draft)](issue/bun-17332-comment.md)
+- [Comment on bun#17332](issue/bun-17332-comment.md)
 
 ## 3. Related issues
 

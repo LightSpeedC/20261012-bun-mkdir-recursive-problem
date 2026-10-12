@@ -73,7 +73,7 @@ NG   fs.mkdir ../exists  EEXIST
 
 ## 3. 既存の issue と修正 PR
 
-同じ症状の issue が既にあり、修正の PR も出ている。**新しい issue は立てず、既存の issue にコメントを付ける**。
+同じ症状の issue が既にあり、修正の PR も出ている。**新しい issue は立てず、既存の issue にコメントを付けた**（[2026-10-12 に投稿したコメント](https://github.com/oven-sh/bun/issues/17332#issuecomment-6118179563)）。
 
 - [oven-sh/bun#17332](https://github.com/oven-sh/bun/issues/17332) Bun crashes when creating duplicate directory in path starting with ../（2025-02-14 作成、OPEN、ラベル `bug` `windows` `node:fs`）。報告は `fs/promises` の `mkdir` だけ
 - [oven-sh/bun#42014](https://github.com/oven-sh/bun/pull/42014) sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at（2026-09-08 作成、OPEN、レビュー待ち）。本文に `Fixes #17332` がある

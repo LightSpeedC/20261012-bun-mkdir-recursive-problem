@@ -73,7 +73,7 @@ NG   fs.mkdir ../exists  EEXIST
 
 ## 3. Existing issue and fix PR
 
-An issue with the same symptom already exists, and a fix PR is open. **Instead of filing a new issue, we add a comment to the existing one.**
+An issue with the same symptom already exists, and a fix PR is open. **Instead of filing a new issue, we added a comment to the existing one** ([the comment posted on 2026-10-12](https://github.com/oven-sh/bun/issues/17332#issuecomment-6118179563)).
 
 - [oven-sh/bun#17332](https://github.com/oven-sh/bun/issues/17332) Bun crashes when creating duplicate directory in path starting with ../ (opened 2025-02-14, OPEN, labels `bug` `windows` `node:fs`). It reports `mkdir` from `fs/promises` only
 - [oven-sh/bun#42014](https://github.com/oven-sh/bun/pull/42014) sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at (opened 2026-09-08, OPEN, review required). Its description says `Fixes #17332`
