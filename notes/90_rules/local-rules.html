@@ -20,7 +20,8 @@ a { color: var(--link, #1a4fa0); background: transparent; }
 .navbar { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
 .navbar a { display: inline-block; padding: 0 9px; border-radius: 6px; background: linear-gradient(100deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
 .ch01 { --accent: hsl(280,78%,25%); --accent2: hsl(280,58%,55%); --soft: hsl(280,28%,95%); }
-.ch02 { --accent: hsl(0,78%,25%); --accent2: hsl(0,58%,55%); --soft: hsl(0,28%,95%); }
+.ch02 { --accent: hsl(140,78%,25%); --accent2: hsl(140,58%,55%); --soft: hsl(140,28%,95%); }
+.ch03 { --accent: hsl(0,78%,25%); --accent2: hsl(0,58%,55%); --soft: hsl(0,28%,95%); }
 section { margin: 34px 0; padding: 4px 26px 26px; border-radius: 10px; background: linear-gradient(180deg, var(--soft, #f2f5fb), #fff); color: var(--ink); }
 section h1 { margin: 26px 0 20px; padding: 14px 20px; border-radius: 8px; font-size: 1.45em; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.18); }
 code { background: var(--code-bg, #f4f6fa); border: 1px solid var(--line, #d9dfe8); color: #17335f; padding: 0 4px; border-radius: 4px; font-size: 0.9em; }
@@ -62,6 +63,30 @@ footer .navbar { margin-top: 0; }
 <li><strong>issue ・ PR ・ コメントの本文に書くリンクは、Markdown のリンク記法（<code>[文字](URL)</code>）にする</strong>。裸の URL は長く、本文が読みにくくなる。<code>#42014</code> のような番号は GitHub が自動でリンクにするので、そのまま書く</li>
 <li><strong>PR のビルドと差分は <code>_pr/&lt;PR 番号&gt;/</code> に置く</strong>（例: <code>_pr/42014/</code>）。<code>bun-windows-x64.zip</code>、展開した <code>bun.exe</code>、差分（<code>pr.diff</code>）など。<code>_*</code> で Git の管理から外れる。<code>tmp/</code> と違い、使い終わっても消さない（再検証で使う）</li>
 <li><strong>ビルドを試した PR は、ソースも必ず読む</strong>。差分は <code>gh pr diff &lt;番号&gt; -R oven-sh/bun</code> で <code>_pr/&lt;番号&gt;/pr.diff</code> に保存して読む。差分だけで動きが分からないときは、Bun 本体の該当ファイルを <code>_pr/base/&lt;リビジョン&gt;/</code> に取得して読む（リビジョンは <code>bun --revision</code> の値）。結果だけでなく、<strong>なぜ直る・直らないかをソースの箇所で示す</strong></li>
+</ul>
+</section>
+
+<section class="ch03" id="ch03">
+<h1>投稿した issue を定期的に確かめる</h1>
+<ul>
+<li><strong>対象</strong>: このプロジェクトから投稿した issue と、コメントした issue。いまは次の 2 つ。投稿が増えたら、ここに足す
+	<ul>
+	<li><a href="https://github.com/oven-sh/bun/issues/45059">oven-sh/bun#45059</a>（投稿した issue）</li>
+	<li><a href="https://github.com/oven-sh/bun/issues/17332">oven-sh/bun#17332</a>（コメントした issue。コメント 6118179563）</li>
+	</ul>
+</li>
+<li><strong>時刻</strong>: 毎日 5:00 ・ 8:00 ・ 12:00 ・ 15:00 ・ 17:00 ・ 21:00（JST）。cron（<code>0 5,8,12,15,17,21 * * *</code>）で回す。セッションを開き直したときや、7 日で失効したときは、指示を待たずに作り直す。cron の指示文は「ローカルルールの 3 章に従い、投稿した issue を確かめる」の 1 行にし、手順を写さない</li>
+<li><strong>手段</strong>: <code>gh api</code> で取る。取得と比較は <code>tools/80_ops/issue-watch.ts</code> で行う（<code>node tools/80_ops/issue-watch.ts</code>）
+	<ul>
+	<li>issue: <code>repos/oven-sh/bun/issues/&lt;番号&gt;</code>（状態 ・ ラベル ・ コメント数 ・ 更新日時）</li>
+	<li>コメント: <code>repos/oven-sh/bun/issues/&lt;番号&gt;/comments</code>（新しいコメント）</li>
+	<li>自分のコメント: <code>repos/oven-sh/bun/issues/comments/6118179563</code>（リアクション）</li>
+	<li>言及: <code>repos/oven-sh/bun/issues/&lt;番号&gt;/timeline</code>（ほかの issue ・ PR からの参照）</li>
+	</ul>
+</li>
+<li><strong>見ること</strong>: 状態（open ・ closed）、ラベル、新しいコメント、自分のコメントへのリアクションと返信、関わる PR（#42014 ・ #42635 ・ #40536）への言及</li>
+<li><strong>前回との比較</strong>: 確かめた結果を <code>etc/issue-watch.json</code> に残し、次の回はそれと比べる</li>
+<li><strong>報告するのは変化があったときだけ</strong>。変化がなければ何も言わない。返信や対応が要りそうなら、案を出して指示を待つ（外への書き込みは指示を待つ、は変えない）</li>
 </ul>
 </section>
 </div>
