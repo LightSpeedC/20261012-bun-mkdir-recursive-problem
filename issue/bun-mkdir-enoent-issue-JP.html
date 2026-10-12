@@ -60,6 +60,7 @@ footer .navbar { margin-top: 0; }
 
 <section class="ch01" id="ch01">
 <h1>概要</h1>
+<p>2026-10-12 に <a href="https://github.com/oven-sh/bun/issues/45059">oven-sh/bun#45059</a> として投稿した。</p>
 <ul>
 <li>Windows で <code>fs.mkdirSync(p, { recursive: true })</code> に <code>./</code> ・ <code>.\</code> ・ <code>sub/..</code> を渡すと、パスが空の <code>ENOENT</code> になる。3 つともカレント自身を指し、カレントは存在する。<code>fs.promises.mkdir</code> とコールバックの <code>fs.mkdir</code> も同じように失敗する</li>
 <li>Node.js v26.11.1 と Deno 2.9.7 は、エラーにせずに返る</li>

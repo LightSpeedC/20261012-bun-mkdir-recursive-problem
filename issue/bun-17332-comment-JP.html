@@ -67,7 +67,7 @@ footer .navbar { margin-top: 0; }
 <li>修正の <a href="https://github.com/oven-sh/bun/pull/42014">oven-sh/bun#42014</a> が出ていて、レビュー待ち（<code>Fixes #17332</code>）</li>
 <li>新しい issue は重複として閉じられる。#17332 に、1.4.3 でも起きることと、今回分かった範囲（同期・コールバックでも起きる、<code>../</code> で始まるパスに限らない、Node.js ・ Deno では起きない）を足すほうが役に立つ</li>
 </ul>
-<div class="callout callout-important"><strong>投稿のあとに分かったこと</strong>: 投稿した本文の「14 件すべてが通った」は、投稿した時点のテストの件数。そのあと、カレント自身を指すパス（<code>.</code> ・ <code>./</code> ・ <code>.\</code> ・ <code>inner/..</code>）でも失敗することが分かり、テストを 18 件にした。#42014 のビルドでも <code>./</code> ・ <code>.\</code> ・ <code>inner/..</code> の 3 件は <code>ENOENT</code> になる（#42635 のビルドも同じ）。#40536 のビルドでは 18 件すべてが通る。詳しくは <a href="../research/mkdir-eexist-results-JP.html">調査結果</a>。この 3 件は、まだ投稿していない。</div>
+<div class="callout callout-important"><strong>投稿のあとに編集した</strong>: 最後の段落は、はじめ「#42014 で直る。14 件すべてが通った」と書いていた。そのあと、#42014 と #42635 のビルドでも <code>./</code> ・ <code>.\</code> ・ <code>sub/..</code> が <code>ENOENT</code> になると分かったため、新しい issue <a href="https://github.com/oven-sh/bun/issues/45059">#45059</a>（<a href="bun-mkdir-enoent-issue-JP.html">そのエビデンス</a>）へのリンクを付けた追記に差し替えた。</div>
 <p>投稿した本文（英語）は <a href="bun-17332-comment.html">英語版</a> にある。投稿したコメントは <a href="https://github.com/oven-sh/bun/issues/17332#issuecomment-6118179563">こちら</a>。</p>
 </section>
 
@@ -83,7 +83,7 @@ footer .navbar { margin-top: 0; }
 <li>（結果の表。<a href="../research/mkdir-eexist-results-JP.html">調査結果</a> の表と同じ）</li>
 <li>回避策: <code>path.resolve(p)</code> を渡す</li>
 <li>再現コードと、3 つのランタイムでそのまま流れる <code>node:test</code> のテストは、<a href="https://github.com/LightSpeedC/20261012-bun-mkdir-recursive-problem#readme">このリポジトリ</a>にある。詳しい調査結果は<a href="https://lightspeedc.com/20261012-bun-mkdir-recursive-problem/research/mkdir-eexist-results.html">こちら</a></li>
-<li>#42014 で直る。その Windows x64 の CI ビルド（<code>1.4.3-canary.1+cfff26e9a</code>。Buildkite #113149 の <code>bun-windows-x64.zip</code>、SHA-256 を照合済み）で同じテストを流すと、上の表で ❌ の行も含めて 14 件すべてが通った。説明している原因「字面で畳んだあと先頭に残る <code>..</code> が、解決されないまま NT のフォルダ確認に渡る」も、上の結果と合う</li>
+<li>追記: #42014 のビルドで、EEXIST の場合（<code>..</code> で始まるパスと <code>.</code>）は直る。ただし <code>./</code> ・ <code>.\</code> ・ <code>sub/..</code> は、#42014 と #42635 のどちらでも、まだ <code>ENOENT</code> を投げる。#45059 を参照</li>
 </ul>
 </section>
 </div>

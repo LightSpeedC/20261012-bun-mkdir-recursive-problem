@@ -14,6 +14,8 @@ Windows の Bun で、"./" ・ ".\" ・ "a/.." を recursive mkdir すると ENO
 
 ## 1. 概要
 
+2026-10-12 に [oven-sh/bun#45059](https://github.com/oven-sh/bun/issues/45059) として投稿した。
+
 - Windows で `fs.mkdirSync(p, { recursive: true })` に `./` ・ `.\` ・ `sub/..` を渡すと、パスが空の `ENOENT` になる。3 つともカレント自身を指し、カレントは存在する。`fs.promises.mkdir` とコールバックの `fs.mkdir` も同じように失敗する
 - Node.js v26.11.1 と Deno 2.9.7 は、エラーにせずに返る
 - <strong>修正 PR の #42014 と #42635 では直らない。</strong>直るのは #40536 だけ

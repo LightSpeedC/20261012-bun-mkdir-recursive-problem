@@ -30,6 +30,7 @@ To run the tests on Windows (node, deno and bun must be on PATH): `tools\40_test
 
 - [oven-sh/bun#17332](https://github.com/oven-sh/bun/issues/17332) — Bun crashes when creating duplicate directory in path starting with ../
 - [oven-sh/bun#42014](https://github.com/oven-sh/bun/pull/42014) — sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at (the fix)
+- [oven-sh/bun#45059](https://github.com/oven-sh/bun/issues/45059) — Windows: recursive mkdir of `./`, `.\` or `sub/..` throws ENOENT with an empty path (filed from this project)
 - [oven-sh/bun#44576](https://github.com/oven-sh/bun/issues/44576) — node:fs: recursive mkdir of "." or ".." throws EEXIST on Windows
 - [oven-sh/bun#42635](https://github.com/oven-sh/bun/pull/42635) — fix(node:fs): preserve Win32 semantics in recursive mkdir checks (says the `child\..` ENOENT remains)
 - [oven-sh/bun#40536](https://github.com/oven-sh/bun/pull/40536) — node:fs: return the namespaced absolute first path created for a relative recursive mkdir on Windows (its build passes every case, including the ENOENT ones)

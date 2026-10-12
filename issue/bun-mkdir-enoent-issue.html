@@ -60,6 +60,7 @@ footer .navbar { margin-top: 0; }
 
 <section class="ch01" id="ch01">
 <h1>Summary</h1>
+<p>Filed as <a href="https://github.com/oven-sh/bun/issues/45059">oven-sh/bun#45059</a> on 2026-10-12.</p>
 <ul>
 <li>On Windows, <code>fs.mkdirSync(p, { recursive: true })</code> throws <code>ENOENT</code> with an empty path for <code>p</code> = <code>./</code>, <code>.\</code> or <code>sub/..</code>. All three name the current directory, which exists. <code>fs.promises.mkdir</code> and callback <code>fs.mkdir</code> fail the same way</li>
 <li>Node.js v26.11.1 and Deno 2.9.7 return without an error</li>

@@ -14,6 +14,8 @@ On Windows, Bun's recursive mkdir of "./", ".\" or "a/.." throws ENOENT. The ope
 
 ## 1. Summary
 
+Filed as [oven-sh/bun#45059](https://github.com/oven-sh/bun/issues/45059) on 2026-10-12.
+
 - On Windows, `fs.mkdirSync(p, { recursive: true })` throws `ENOENT` with an empty path for `p` = `./`, `.\` or `sub/..`. All three name the current directory, which exists. `fs.promises.mkdir` and callback `fs.mkdir` fail the same way
 - Node.js v26.11.1 and Deno 2.9.7 return without an error
 - **The open fix PRs #42014 and #42635 do not fix it.** Only #40536 does
