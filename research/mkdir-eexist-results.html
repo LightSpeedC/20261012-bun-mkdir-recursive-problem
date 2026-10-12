@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>mkdir recursive EEXIST results</title>
+<title>mkdir recursive EEXIST / ENOENT results</title>
 <style>
 :root {
 	--navy1: #12224d; --navy2: #2f5fbf; --ink: #1c2330; --ink-soft: #4a5568;
@@ -47,7 +47,7 @@ footer .navbar { margin-top: 0; }
 </head>
 <body>
 <div class="titlebar"><div class="inner">
-<h1>mkdir recursive EEXIST results</h1>
+<h1>mkdir recursive EEXIST / ENOENT results</h1>
 <p class="lead">On Windows, Bun's <code>fs.mkdir(path, { recursive: true })</code> throws EEXIST or ENOENT for an existing directory when a relative path points above the current directory or names the current directory itself. Compared with Node.js and Deno</p>
 <p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-12</p>
 </div></div>
@@ -58,7 +58,7 @@ footer .navbar { margin-top: 0; }
 <nav class="toc"><ol>
 <li class="ch01"><a href="#ch01">Summary and environment</a></li>
 <li class="ch02"><a href="#ch02">Results</a></li>
-<li class="ch03"><a href="#ch03">Existing issue and fix PR</a></li>
+<li class="ch03"><a href="#ch03">Existing issues and fix PRs</a></li>
 <li class="ch04"><a href="#ch04">How to reproduce</a></li>
 </ol></nav>
 
@@ -128,7 +128,7 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 </section>
 
 <section class="ch03" id="ch03">
-<h1>Existing issue and fix PR</h1>
+<h1>Existing issues and fix PRs</h1>
 <p>An issue with the same symptom already exists, and a fix PR is open. <strong>Instead of filing a new issue, we added a comment to the existing one</strong> (<a href="https://github.com/oven-sh/bun/issues/17332#issuecomment-6118179563">the comment posted on 2026-10-12</a>).</p>
 <ul>
 <li><a href="https://github.com/oven-sh/bun/issues/17332">oven-sh/bun#17332</a> Bun crashes when creating duplicate directory in path starting with ../ (opened 2025-02-14, OPEN, labels <code>bug</code> <code>windows</code> <code>node:fs</code>). It reports <code>mkdir</code> from <code>fs/promises</code> only</li>

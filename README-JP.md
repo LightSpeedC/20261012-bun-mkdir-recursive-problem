@@ -1,4 +1,4 @@
-# Bun の mkdir recursive 問題
+# Bun の mkdir recursive で EEXIST ・ ENOENT になる問題
 
 Windows の Bun で、カレントより上やカレント自身を指す相対パスに fs.mkdir(path, { recursive: true }) を使うと、既にあるフォルダで EEXIST ・ ENOENT になる。Node.js ・ Deno と比べる
 
@@ -13,15 +13,15 @@ Windows の Bun で、カレントより上やカレント自身を指す相対�
 Windows でテストを流すには（node ・ deno ・ bun が PATH にあること）: `tools\40_test\run-tests.cmd`
 
 1. [調査](#1-調査)
-2. [issue へのコメント](#2-issue-へのコメント)
+2. [Bun への投稿](#2-bun-への投稿)
 3. [関連する issue](#3-関連する-issue)
 4. [ルール](#4-ルール)
 
 ## 1. 調査
 
-- [mkdir recursive の EEXIST 調査結果](research/mkdir-eexist-results-JP.md)
+- [mkdir recursive の EEXIST ・ ENOENT 調査結果](research/mkdir-eexist-results-JP.md)
 
-## 2. issue へのコメント
+## 2. Bun への投稿
 
 - [bun#17332 へのコメント](issue/bun-17332-comment-JP.md)
 - [recursive mkdir の ENOENT](issue/bun-mkdir-enoent-issue-JP.md)

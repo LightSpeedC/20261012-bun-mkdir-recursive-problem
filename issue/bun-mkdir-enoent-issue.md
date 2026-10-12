@@ -1,6 +1,6 @@
 # Recursive mkdir ENOENT
 
-On Windows, Bun's recursive mkdir of "./", ".\" or "a/.." throws ENOENT. The open fix PRs #42014 and #42635 do not fix it
+On Windows, Bun's recursive mkdir of "./", ".\" or "sub/.." throws ENOENT. The open fix PRs #42014 and #42635 do not fix it
 
 > 📅 Created: 2026-10-12 / Updated: 2026-10-12
 

@@ -1,4 +1,4 @@
-# mkdir recursive EEXIST results
+# mkdir recursive EEXIST / ENOENT results
 
 On Windows, Bun's `fs.mkdir(path, { recursive: true })` throws EEXIST or ENOENT for an existing directory when a relative path points above the current directory or names the current directory itself. Compared with Node.js and Deno
 
@@ -10,7 +10,7 @@ On Windows, Bun's `fs.mkdir(path, { recursive: true })` throws EEXIST or ENOENT 
 
 1. [Summary and environment](#1-summary-and-environment)
 2. [Results](#2-results)
-3. [Existing issue and fix PR](#3-existing-issue-and-fix-pr)
+3. [Existing issues and fix PRs](#3-existing-issues-and-fix-prs)
 4. [How to reproduce](#4-how-to-reproduce)
 
 ## 1. Summary and environment
@@ -78,7 +78,7 @@ NG   fs.mkdir ../exists  EEXIST
 - The `warn: internal error: OBJECT_NAME_INVALID` line reported in #17332 (Bun 1.2.2) is no longer printed on 1.4.3
 - Workaround: pass an absolute path from `path.resolve()`
 
-## 3. Existing issue and fix PR
+## 3. Existing issues and fix PRs
 
 An issue with the same symptom already exists, and a fix PR is open. **Instead of filing a new issue, we added a comment to the existing one** ([the comment posted on 2026-10-12](https://github.com/oven-sh/bun/issues/17332#issuecomment-6118179563)).
 

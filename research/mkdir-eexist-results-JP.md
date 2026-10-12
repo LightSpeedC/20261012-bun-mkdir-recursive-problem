@@ -1,4 +1,4 @@
-# mkdir recursive の EEXIST 調査結果
+# mkdir recursive の EEXIST ・ ENOENT 調査結果
 
 Windows の Bun で、カレントより上やカレント自身を指す相対パスに `fs.mkdir(path, { recursive: true })` を使うと EEXIST ・ ENOENT になる。Node.js・Deno と比べた
 

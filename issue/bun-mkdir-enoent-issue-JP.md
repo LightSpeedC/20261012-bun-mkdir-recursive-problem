@@ -1,6 +1,6 @@
 # recursive mkdir の ENOENT
 
-Windows の Bun で、"./" ・ ".\" ・ "a/.." を recursive mkdir すると ENOENT になる。修正 PR の #42014 と #42635 では直らない
+Windows の Bun で、"./" ・ ".\" ・ "sub/.." を recursive mkdir すると ENOENT になる。修正 PR の #42014 と #42635 では直らない
 
 > 📅 作成: 2026-10-12 / 更新: 2026-10-12
 

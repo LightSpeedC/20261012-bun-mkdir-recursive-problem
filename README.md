@@ -1,4 +1,4 @@
-# Bun mkdir recursive problem
+# Bun mkdir recursive EEXIST / ENOENT
 
 On Windows, Bun's fs.mkdir(path, { recursive: true }) throws EEXIST or ENOENT for an existing directory when a relative path points above the current directory or names the current directory itself, compared with Node.js and Deno
 
@@ -13,15 +13,15 @@ With `recursive: true`, `fs.mkdir` must return without an error when the directo
 To run the tests on Windows (node, deno and bun must be on PATH): `tools\40_test\run-tests.cmd`
 
 1. [Research](#1-research)
-2. [Comment on the issue](#2-comment-on-the-issue)
+2. [Posts to Bun](#2-posts-to-bun)
 3. [Related issues](#3-related-issues)
 4. [Rules](#4-rules)
 
 ## 1. Research
 
-- [mkdir recursive EEXIST results](research/mkdir-eexist-results.md)
+- [mkdir recursive EEXIST / ENOENT results](research/mkdir-eexist-results.md)
 
-## 2. Comment on the issue
+## 2. Posts to Bun
 
 - [Comment on bun#17332](issue/bun-17332-comment.md)
 - [Recursive mkdir ENOENT](issue/bun-mkdir-enoent-issue.md)
