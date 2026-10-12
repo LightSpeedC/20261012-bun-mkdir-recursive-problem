@@ -24,6 +24,7 @@ To run the tests on Windows (node, deno and bun must be on PATH): `tools\40_test
 ## 2. Comment on the issue
 
 - [Comment on bun#17332](issue/bun-17332-comment.md)
+- [Recursive mkdir ENOENT](issue/bun-mkdir-enoent-issue.md)
 
 ## 3. Related issues
 

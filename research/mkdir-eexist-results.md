@@ -114,7 +114,7 @@ What we read matches the PR description.
 
 ### Checked with the PR #42014 build
 
-We downloaded the Windows x64 build `bun-windows-x64.zip` from the PR's CI ([Buildkite #113149](https://buildkite.com/bun/bun/builds/113149)). Its SHA-256 matched the listed value, and its version was `1.4.3-canary.1+cfff26e9a` (the PR head commit). With this build, every path pointing above the current directory and `.` pass. **The three paths that name the current directory, `./`, `.\` and `inner/..`, still throw `ENOENT` with this build** (see the table in [How to reproduce](#4-how-to-reproduce)). We have not looked into why.
+We downloaded the Windows x64 build `bun-windows-x64.zip` from the PR's CI ([Buildkite #113149](https://buildkite.com/bun/bun/builds/113149)). Its SHA-256 matched the listed value, and its version was `1.4.3-canary.1+cfff26e9a` (the PR head commit). With this build, every path pointing above the current directory and `.` pass. **The three paths that name the current directory, `./`, `.\` and `inner/..`, still throw `ENOENT` with this build** (see the table in [How to reproduce](#4-how-to-reproduce)). The cause is in "The ENOENT cause" below.
 
 ### Checked with other PR builds
 
@@ -127,6 +127,25 @@ In the same way, we downloaded the Windows x64 builds of [#40536](https://github
 | #42014 | Buildkite #113149, `1.4.3-canary.1+cfff26e9a` | ✅ | ❌ ENOENT |
 
 **Of the three PRs, only #40536 fixes every case**. Its build is based on 1.4.1, and the PR has not been updated since 2026-08-26.
+
+### The ENOENT cause (checked in the source)
+
+In Bun 1.4.3 (`c6da4a4d3`), `os_path_kernel32` in `src/runtime/node/types.rs` normalizes the path lexically (`normalize_string_buf`) before it reaches mkdir.
+
+- Normalizing turns `./`, `.\` and `inner/..` into **an empty string**. The source comment says so too: "normalizeStringBuf strips it to an empty string"
+- Of the inputs that become empty, **only the exact one-character `.`** is special-cased and passed as `.`. `./` and the others miss that check and reach mkdir empty
+- mkdir of an empty path fails with ENOENT, which also explains the empty path in the error message
+- The same normalization is why errors for paths above the cwd show the collapsed form (`..\exists`)
+
+A possible fix: if the normalized result is empty, use `.` (move the current `.` special case after the normalization).
+
+### What each PR changes, and why it fixes the ENOENT or not
+
+| PR | What it changes | The three ENOENT cases |
+|---|---|---|
+| #40536 | At the entry of recursive mkdir in `node_fs.rs`, joins a relative path onto the cwd (`join_cwd_windows`) before normalizing | ✅ After the join, normalizing gives the absolute path of the cwd instead of an empty string |
+| #42635 | Replaces the existence check, from the NT API to libuv's Win32 stat (`stat_w`) | ❌ The normalization in `os_path_kernel32`, which runs before the check, is unchanged |
+| #42014 | Resolves `.` and `..` in names passed to NT against the directory handle (`nt_object_name_at`) | ❌ Likewise, the normalization in `os_path_kernel32` is unchanged |
 
 > [!NOTE]
 > **Not verified**: whether it happens on Linux or macOS (the PR says its tests pass on Linux before and after the change).

@@ -158,7 +158,7 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 </ul>
 <p>What we read matches the PR description.</p>
 <h2>Checked with the PR #42014 build</h2>
-<p>We downloaded the Windows x64 build <code>bun-windows-x64.zip</code> from the PR's CI (<a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>). Its SHA-256 matched the listed value, and its version was <code>1.4.3-canary.1+cfff26e9a</code> (the PR head commit). With this build, every path pointing above the current directory and <code>.</code> pass. <strong>The three paths that name the current directory, <code>./</code>, <code>.\</code> and <code>inner/..</code>, still throw <code>ENOENT</code> with this build</strong> (see the table in <a href="#ch04">How to reproduce</a>). We have not looked into why.</p>
+<p>We downloaded the Windows x64 build <code>bun-windows-x64.zip</code> from the PR's CI (<a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>). Its SHA-256 matched the listed value, and its version was <code>1.4.3-canary.1+cfff26e9a</code> (the PR head commit). With this build, every path pointing above the current directory and <code>.</code> pass. <strong>The three paths that name the current directory, <code>./</code>, <code>.\</code> and <code>inner/..</code>, still throw <code>ENOENT</code> with this build</strong> (see the table in <a href="#ch04">How to reproduce</a>). The cause is in "The ENOENT cause" below.</p>
 <h2>Checked with other PR builds</h2>
 <p>In the same way, we downloaded the Windows x64 builds of <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> and <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a>. Both SHA-256 values matched the listed ones.</p>
 <div class="tablewrap"><table>
@@ -169,6 +169,23 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 <tr><td class="nowrap">#42014</td><td>Buildkite #113149, <code>1.4.3-canary.1+cfff26e9a</code></td><td>✅</td><td class="nowrap">❌ ENOENT</td></tr>
 </tbody></table></div>
 <p><strong>Of the three PRs, only #40536 fixes every case</strong>. Its build is based on 1.4.1, and the PR has not been updated since 2026-08-26.</p>
+<h2>The ENOENT cause (checked in the source)</h2>
+<p>In Bun 1.4.3 (<code>c6da4a4d3</code>), <code>os_path_kernel32</code> in <code>src/runtime/node/types.rs</code> normalizes the path lexically (<code>normalize_string_buf</code>) before it reaches mkdir.</p>
+<ul>
+<li>Normalizing turns <code>./</code>, <code>.\</code> and <code>inner/..</code> into <strong>an empty string</strong>. The source comment says so too: "normalizeStringBuf strips it to an empty string"</li>
+<li>Of the inputs that become empty, <strong>only the exact one-character <code>.</code></strong> is special-cased and passed as <code>.</code>. <code>./</code> and the others miss that check and reach mkdir empty</li>
+<li>mkdir of an empty path fails with ENOENT, which also explains the empty path in the error message</li>
+<li>The same normalization is why errors for paths above the cwd show the collapsed form (<code>..\exists</code>)</li>
+</ul>
+<p>A possible fix: if the normalized result is empty, use <code>.</code> (move the current <code>.</code> special case after the normalization).</p>
+<h2>What each PR changes, and why it fixes the ENOENT or not</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>PR</th><th>What it changes</th><th>The three ENOENT cases</th></tr></thead>
+<tbody>
+<tr><td class="nowrap">#40536</td><td>At the entry of recursive mkdir in <code>node_fs.rs</code>, joins a relative path onto the cwd (<code>join_cwd_windows</code>) before normalizing</td><td>✅ After the join, normalizing gives the absolute path of the cwd instead of an empty string</td></tr>
+<tr><td class="nowrap">#42635</td><td>Replaces the existence check, from the NT API to libuv's Win32 stat (<code>stat_w</code>)</td><td>❌ The normalization in <code>os_path_kernel32</code>, which runs before the check, is unchanged</td></tr>
+<tr><td class="nowrap">#42014</td><td>Resolves <code>.</code> and <code>..</code> in names passed to NT against the directory handle (<code>nt_object_name_at</code>)</td><td>❌ Likewise, the normalization in <code>os_path_kernel32</code> is unchanged</td></tr>
+</tbody></table></div>
 <div class="callout"><strong>Not verified</strong>: whether it happens on Linux or macOS (the PR says its tests pass on Linux before and after the change).</div>
 </section>
 

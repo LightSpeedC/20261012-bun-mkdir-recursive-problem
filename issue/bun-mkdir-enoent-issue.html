@@ -1,0 +1,188 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recursive mkdir ENOENT</title>
+<style>
+:root {
+	--navy1: #12224d; --navy2: #2f5fbf; --ink: #1c2330; --ink-soft: #4a5568;
+	--line: #d9dfe8; --code-bg: #f4f6fa; --link: #1a4fa0;
+	--accent: var(--navy1); --accent2: var(--navy2); --soft: #f2f5fb;
+}
+body { margin: 0; background: #fff; color: var(--ink); font-size: 15.5px; line-height: 1.85; font-family: "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif; }
+a { color: var(--link, #1a4fa0); background: transparent; }
+.titlebar { background: linear-gradient(135deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; padding: 34px 30px 30px; }
+.titlebar .inner { max-width: 1600px; margin: 0 auto; }
+.titlebar h1 { font-size: 1.8em; margin: 0 0 6px; color: #fff; }
+.titlebar .lead, .titlebar .date { color: #e6ecf8; background: transparent; font-size: 0.92em; margin: 2px 0; }
+.wrap { max-width: 1600px; margin: 0 auto; padding: 0 30px; }
+.navbar { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.navbar a { display: inline-block; padding: 0 9px; border-radius: 6px; background: linear-gradient(100deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
+.ch01 { --accent: hsl(280,78%,25%); --accent2: hsl(280,58%,55%); --soft: hsl(280,28%,95%); }
+.ch02 { --accent: hsl(140,78%,25%); --accent2: hsl(140,58%,55%); --soft: hsl(140,28%,95%); }
+.ch03 { --accent: hsl(0,78%,25%); --accent2: hsl(0,58%,55%); --soft: hsl(0,28%,95%); }
+.toc ol { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; counter-reset: tocnum; }
+.toc ol li { counter-increment: tocnum; }
+.toc ol a { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal; width: 310px; max-width: 100%; padding: 6px 12px; border-radius: 6px; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
+.toc ol a::before { content: counter(tocnum) ". "; }
+section { margin: 34px 0; padding: 4px 26px 26px; border-radius: 10px; background: linear-gradient(180deg, var(--soft, #f2f5fb), #fff); color: var(--ink); }
+section h1 { margin: 26px 0 20px; padding: 14px 20px; border-radius: 8px; font-size: 1.45em; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.18); }
+section h2 { margin: 30px 0 12px; padding: 6px 12px; font-size: 1.15em; border-left: 6px solid var(--accent, #12224d); background: linear-gradient(90deg, var(--soft, #f2f5fb), #fff); color: var(--accent, #12224d); }
+code { background: var(--code-bg, #f4f6fa); border: 1px solid var(--line, #d9dfe8); color: #17335f; padding: 0 4px; border-radius: 4px; font-size: 0.9em; }
+pre { padding: 13px 16px; overflow-x: auto; border-left: 5px solid var(--accent2, #2f5fbf); background: linear-gradient(180deg, var(--code-bg, #f4f6fa), #fff); color: var(--ink); }
+pre code { border: none; background: transparent; padding: 0; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin: 10px 0; }
+th { padding: 9px 12px; text-align: left; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; }
+td { padding: 9px 12px; vertical-align: top; border-top: 1px solid var(--line, #d9dfe8); background: #fff; color: var(--ink); }
+tr:nth-child(even) td { background: #fafbfe; color: var(--ink); }
+.nowrap { white-space: nowrap; }
+footer { max-width: 1600px; margin: 0 auto; padding: 18px 30px 30px; }
+footer .navbar { margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="titlebar"><div class="inner">
+<h1>Recursive mkdir ENOENT</h1>
+<p class="lead">On Windows, Bun's recursive mkdir of "./", ".\" or "a/.." throws ENOENT. The open fix PRs #42014 and #42635 do not fix it</p>
+<p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-12</p>
+</div></div>
+
+<div class="wrap">
+<div class="navbar"><a href="../README.html" title="Home">⌂</a><a href="bun-mkdir-enoent-issue-JP.html" title="日本語">日本語</a></div>
+
+<nav class="toc"><ol>
+<li class="ch01"><a href="#ch01">Summary</a></li>
+<li class="ch02"><a href="#ch02">Evidence: runs</a></li>
+<li class="ch03"><a href="#ch03">Evidence: source</a></li>
+</ol></nav>
+
+<section class="ch01" id="ch01">
+<h1>Summary</h1>
+<ul>
+<li>On Windows, <code>fs.mkdirSync(p, { recursive: true })</code> throws <code>ENOENT</code> with an empty path for <code>p</code> = <code>./</code>, <code>.\</code> or <code>sub/..</code>. All three name the current directory, which exists. <code>fs.promises.mkdir</code> and callback <code>fs.mkdir</code> fail the same way</li>
+<li>Node.js v26.11.1 and Deno 2.9.7 return without an error</li>
+<li><strong>The open fix PRs #42014 and #42635 do not fix it.</strong> Only #40536 does</li>
+<li>Cause: <code>os_path_kernel32</code> normalizes these paths into an empty string, and only the exact input <code>"."</code> is special-cased (<a href="#ch03">Evidence: source</a>)</li>
+<li>A possible fix: if the normalized result is empty, use <code>"."</code> (move the <code>"."</code> special case after the normalization)</li>
+</ul>
+<p>Repro script: <a href="../research/repro-enoent.cjs">research/repro-enoent.cjs</a>. The same cases are in <a href="../tests/mkdir-recursive.test.ts">tests/mkdir-recursive.test.ts</a>. The full write-up of the related EEXIST bug is in the <a href="../research/mkdir-eexist-results.html">results</a>.</p>
+</section>
+
+<section class="ch02" id="ch02">
+<h1>Evidence: runs</h1>
+<h2>Environment and builds</h2>
+<p>Windows 11 Home 10.0.26300 x64. The PR builds are <code>bun-windows-x64.zip</code> from each PR's Buildkite CI; each SHA-256 matched the value listed by Buildkite.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Runtime</th><th>Version</th><th>Source</th></tr></thead>
+<tbody>
+<tr><td class="nowrap">Bun 1.4.3</td><td><code>1.4.3+c6da4a4d3</code></td><td>release (<code>bun upgrade</code>)</td></tr>
+<tr><td class="nowrap">PR #42014</td><td><code>1.4.3-canary.1+cfff26e9a</code></td><td><a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>, SHA-256 <code>6f3415d871f3645620b01e22f27eb708a7267510277dd96a4816d455d5c8323e</code></td></tr>
+<tr><td class="nowrap">PR #42635</td><td><code>1.4.3-canary.1+891eb8df5</code></td><td><a href="https://buildkite.com/bun/bun/builds/115200">Buildkite #115200</a>, SHA-256 <code>6621af0f0afabbcfe8036403e0ff70a341eae63b741be8389992edfed019c0d2</code></td></tr>
+<tr><td class="nowrap">PR #40536</td><td><code>1.4.1-canary.1+8c04559b9</code></td><td><a href="https://buildkite.com/bun/bun/builds/106239">Buildkite #106239</a>, SHA-256 <code>8c8e13a081f26b85e9c0c11c65a2be8687237d02e61e669fb71ce04c5b164d95</code></td></tr>
+<tr><td class="nowrap">Node.js</td><td><code>v26.11.1</code></td><td>release</td></tr>
+<tr><td class="nowrap">Deno</td><td><code>2.9.7</code></td><td>release</td></tr>
+</tbody></table></div>
+<h2>Results</h2>
+<p>The same result for <code>mkdirSync</code>, <code>fs.promises.mkdir</code> and callback <code>fs.mkdir</code>.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Path</th><th class="nowrap">Bun 1.4.3</th><th class="nowrap">PR #42014</th><th class="nowrap">PR #42635</th><th class="nowrap">PR #40536</th><th class="nowrap">Node.js</th><th class="nowrap">Deno</th></tr></thead>
+<tbody>
+<tr><td><code>.</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>./</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>.\</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>sub/..</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>sub/.</code></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+</tbody></table></div>
+<h2>Output of repro-enoent.cjs (verbatim)</h2>
+<p>Bun 1.4.3:</p>
+<pre><code class="language-text">NG . EEXIST EEXIST: file already exists, mkdir '.'
+NG ./ ENOENT ENOENT: no such file or directory, mkdir
+NG .\ ENOENT ENOENT: no such file or directory, mkdir
+NG sub/.. ENOENT ENOENT: no such file or directory, mkdir
+OK sub/.
+NG promises . EEXIST
+NG callback . EEXIST
+NG promises ./ ENOENT
+NG callback ./ ENOENT
+NG promises .\ ENOENT
+NG callback .\ ENOENT
+NG promises sub/.. ENOENT
+NG callback sub/.. ENOENT
+OK promises sub/.
+OK callback sub/.</code></pre>
+<p>PR #42014 and PR #42635 (identical output):</p>
+<pre><code class="language-text">OK .
+NG ./ ENOENT ENOENT: no such file or directory, mkdir
+NG .\ ENOENT ENOENT: no such file or directory, mkdir
+NG sub/.. ENOENT ENOENT: no such file or directory, mkdir
+OK sub/.
+OK promises .
+OK callback .
+NG promises ./ ENOENT
+NG callback ./ ENOENT
+NG promises .\ ENOENT
+NG callback .\ ENOENT
+NG promises sub/.. ENOENT
+NG callback sub/.. ENOENT
+OK promises sub/.
+OK callback sub/.</code></pre>
+<p>PR #40536, Node.js and Deno (identical output):</p>
+<pre><code class="language-text">OK .
+OK ./
+OK .\
+OK sub/..
+OK sub/.
+OK promises .
+OK callback .
+OK promises ./
+OK callback ./
+OK promises .\
+OK callback .\
+OK promises sub/..
+OK callback sub/..
+OK promises sub/.
+OK callback sub/.</code></pre>
+</section>
+
+<section class="ch03" id="ch03">
+<h1>Evidence: source</h1>
+<h2>Where the path becomes empty</h2>
+<p><a href="https://github.com/oven-sh/bun/blob/c6da4a4d3010e5553438c60f6bd76d981976867c/src/runtime/node/types.rs#L1072-L1088">src/runtime/node/types.rs L1072-L1088</a> (Bun 1.4.3, <code>c6da4a4d3</code>), in <code>os_path_kernel32</code> for a relative path:</p>
+<pre><code class="language-rust">            // Handle "." specially since normalizeStringBuf strips it to an empty string
+            if s.len() == 1 &amp;&amp; s[0] == b'.' {
+                // SAFETY: see alignment note above (PathBuffer reinterpreted as [u16]).
+                let buf_u16 = unsafe { bun_core::bytes_as_slice_mut::&lt;u16&gt;(&amp;mut buf[..]) };
+                return Ok(strings::to_kernel32_path(buf_u16, b"."));
+            }
+            let normal = bun_paths::resolve_path::normalize_string_buf::&lt;
+                true,
+                bun_paths::platform::Windows,
+                false,
+            &gt;(s, &amp;mut b[..]);
+            if !strings::fits_in_wide_path_buffer(normal) {
+                return Err(NameTooLong);
+            }
+            // SAFETY: see alignment note above (PathBuffer reinterpreted as [u16]).
+            let buf_u16 = unsafe { bun_core::bytes_as_slice_mut::&lt;u16&gt;(&amp;mut buf[..]) };
+            return Ok(strings::to_kernel32_path(buf_u16, normal));</code></pre>
+<ul>
+<li>The comment says <code>normalize_string_buf</code> strips <code>"."</code> to an empty string, so <code>"."</code> is handled before it</li>
+<li><code>./</code>, <code>.\</code> and <code>sub/..</code> normalize to the same empty string, but the check only matches the one-character input <code>"."</code>. They reach mkdir as an empty path, which matches the empty path in the <code>ENOENT</code> message</li>
+</ul>
+<h2>Why each PR fixes it or not</h2>
+<div class="tablewrap"><table>
+<thead><tr><th>PR</th><th>What it changes</th><th>ENOENT cases</th></tr></thead>
+<tbody>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42014">#42014</a></td><td>Resolves <code>.</code> and <code>..</code> in names passed to NT against the directory handle (<code>nt_object_name_at</code> in <code>src/sys/lib.rs</code>)</td><td class="nowrap">❌ <code>os_path_kernel32</code> unchanged</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42635">#42635</a></td><td>Replaces the existence check with libuv's Win32 stat (<code>stat_w</code>)</td><td class="nowrap">❌ <code>os_path_kernel32</code> unchanged</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/40536">#40536</a></td><td>At the entry of recursive mkdir in <code>src/runtime/node/node_fs.rs</code>, joins a relative path onto the cwd (<code>join_cwd_windows</code>) and normalizes the joined path</td><td>✅ the joined path normalizes to the cwd, not an empty string</td></tr>
+</tbody></table></div>
+<p>#42635's description also notes that <code>child\..</code> still reports <code>ENOENT</code> with that PR and says #40536 covers it. #40536 is based on 1.4.1 and has not been updated since 2026-08-26.</p>
+</section>
+</div>
+
+<footer><div class="navbar"><a href="../README.html" title="Home">⌂</a><a href="bun-mkdir-enoent-issue-JP.html" title="日本語">日本語</a></div></footer>
+</body>
+</html>

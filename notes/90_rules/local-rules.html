@@ -59,6 +59,8 @@ footer .navbar { margin-top: 0; }
 </li>
 <li><strong>検証の結果が変わったら、同じ事実を載せた資料をすべて合わせる</strong>（調査結果・issue の資料・README の英語版と日本語版）。件数やケース名で全体を検索して漏れを探す</li>
 <li><strong>外への書き込みは、従来どおり指示を待つ</strong>。issue ・ PR へのコメント、新しい issue、commit ・ push</li>
+<li><strong>PR のビルドと差分は <code>_pr/&lt;PR 番号&gt;/</code> に置く</strong>（例: <code>_pr/42014/</code>）。<code>bun-windows-x64.zip</code>、展開した <code>bun.exe</code>、差分（<code>pr.diff</code>）など。<code>_*</code> で Git の管理から外れる。<code>tmp/</code> と違い、使い終わっても消さない（再検証で使う）</li>
+<li><strong>ビルドを試した PR は、ソースも必ず読む</strong>。差分は <code>gh pr diff &lt;番号&gt; -R oven-sh/bun</code> で <code>_pr/&lt;番号&gt;/pr.diff</code> に保存して読む。差分だけで動きが分からないときは、Bun 本体の該当ファイルを <code>_pr/base/&lt;リビジョン&gt;/</code> に取得して読む（リビジョンは <code>bun --revision</code> の値）。結果だけでなく、<strong>なぜ直る・直らないかをソースの箇所で示す</strong></li>
 </ul>
 </section>
 </div>
