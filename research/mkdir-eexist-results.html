@@ -1,0 +1,166 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mkdir recursive EEXIST results</title>
+<style>
+:root {
+	--navy1: #12224d; --navy2: #2f5fbf; --ink: #1c2330; --ink-soft: #4a5568;
+	--line: #d9dfe8; --code-bg: #f4f6fa; --link: #1a4fa0;
+	--accent: var(--navy1); --accent2: var(--navy2); --soft: #f2f5fb;
+}
+body { margin: 0; background: #fff; color: var(--ink); font-size: 15.5px; line-height: 1.85; font-family: "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif; }
+a { color: var(--link, #1a4fa0); background: transparent; }
+.titlebar { background: linear-gradient(135deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; padding: 34px 30px 30px; }
+.titlebar .inner { max-width: 1600px; margin: 0 auto; }
+.titlebar h1 { font-size: 1.8em; margin: 0 0 6px; color: #fff; }
+.titlebar .lead, .titlebar .date { color: #e6ecf8; background: transparent; font-size: 0.92em; margin: 2px 0; }
+.wrap { max-width: 1600px; margin: 0 auto; padding: 0 30px; }
+.navbar { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.navbar a { display: inline-block; padding: 0 9px; border-radius: 6px; background: linear-gradient(100deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
+.ch01 { --accent: hsl(280,78%,25%); --accent2: hsl(280,58%,55%); --soft: hsl(280,28%,95%); }
+.ch02 { --accent: hsl(186.7,78%,25%); --accent2: hsl(186.7,58%,55%); --soft: hsl(186.7,28%,95%); }
+.ch03 { --accent: hsl(93.3,78%,25%); --accent2: hsl(93.3,58%,55%); --soft: hsl(93.3,28%,95%); }
+.ch04 { --accent: hsl(0,78%,25%); --accent2: hsl(0,58%,55%); --soft: hsl(0,28%,95%); }
+.toc ol { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; counter-reset: tocnum; }
+.toc ol li { counter-increment: tocnum; }
+.toc ol a { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal; width: 310px; max-width: 100%; padding: 6px 12px; border-radius: 6px; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
+.toc ol a::before { content: counter(tocnum) ". "; }
+section { margin: 34px 0; padding: 4px 26px 26px; border-radius: 10px; background: linear-gradient(180deg, var(--soft, #f2f5fb), #fff); color: var(--ink); }
+section h1 { margin: 26px 0 20px; padding: 14px 20px; border-radius: 8px; font-size: 1.45em; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.18); }
+section h2 { margin: 30px 0 12px; padding: 6px 12px; font-size: 1.15em; border-left: 6px solid var(--accent, #12224d); background: linear-gradient(90deg, var(--soft, #f2f5fb), #fff); color: var(--accent, #12224d); }
+code { background: var(--code-bg, #f4f6fa); border: 1px solid var(--line, #d9dfe8); color: #17335f; padding: 0 4px; border-radius: 4px; font-size: 0.9em; }
+pre { padding: 13px 16px; overflow-x: auto; border-left: 5px solid var(--accent2, #2f5fbf); background: linear-gradient(180deg, var(--code-bg, #f4f6fa), #fff); color: var(--ink); }
+pre code { border: none; background: transparent; padding: 0; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin: 10px 0; }
+th { padding: 9px 12px; text-align: left; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; }
+td { padding: 9px 12px; vertical-align: top; border-top: 1px solid var(--line, #d9dfe8); background: #fff; color: var(--ink); }
+tr:nth-child(even) td { background: #fafbfe; color: var(--ink); }
+.nowrap { white-space: nowrap; }
+.callout { border-left: 6px solid var(--accent, #12224d); background: linear-gradient(180deg, var(--soft, #f2f5fb), #fff); color: var(--ink); border-radius: 0 8px 8px 0; padding: 8px 16px; margin: 14px 0; }
+.callout strong { color: var(--accent, #12224d); background: transparent; }
+footer { max-width: 1600px; margin: 0 auto; padding: 18px 30px 30px; }
+footer .navbar { margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="titlebar"><div class="inner">
+<h1>mkdir recursive EEXIST results</h1>
+<p class="lead">On Windows, Bun's <code>fs.mkdir(path, { recursive: true })</code> throws EEXIST for an existing directory when a relative path points above the current directory. Compared with Node.js and Deno</p>
+<p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-12</p>
+</div></div>
+
+<div class="wrap">
+<div class="navbar"><a href="../README.html" title="Home">⌂</a><a href="mkdir-eexist-results-JP.html" title="日本語">日本語</a></div>
+
+<nav class="toc"><ol>
+<li class="ch01"><a href="#ch01">Summary and environment</a></li>
+<li class="ch02"><a href="#ch02">Results</a></li>
+<li class="ch03"><a href="#ch03">Existing issue and fix PR</a></li>
+<li class="ch04"><a href="#ch04">How to reproduce</a></li>
+</ol></nav>
+
+<section class="ch01" id="ch01">
+<h1>Summary and environment</h1>
+<p>With <code>recursive: true</code>, <code>fs.mkdir</code> returns without an error when the directory already exists (Node.js behavior). On Windows, Bun throws <code>EEXIST</code> only when the path, <strong>after <code>.</code> and <code>..</code> are collapsed, starts with <code>..</code> (points above the current directory) and the directory already exists</strong>. Node.js and Deno do not.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Item</th><th>Value</th></tr></thead>
+<tbody>
+<tr><td>OS</td><td>Windows 11 Home (10.0.26300) x64</td></tr>
+<tr><td>Bun</td><td>1.4.3 (c6da4a4d3), the latest per <code>bun upgrade</code></td></tr>
+<tr><td>Node.js</td><td>v26.11.1 (same result on v26.10.0)</td></tr>
+<tr><td>Deno</td><td>2.9.7, the latest per <code>deno upgrade</code></td></tr>
+</tbody></table></div>
+</section>
+
+<section class="ch02" id="ch02">
+<h1>Results</h1>
+<p>The current directory is <code>sub</code>. <code>exists</code> (already there) and <code>new-dir</code> (not yet there) are siblings of <code>sub</code>.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>API and path</th><th class="nowrap">Bun 1.4.3</th><th class="nowrap">Node.js v26.11.1</th><th class="nowrap">Deno 2.9.7</th></tr></thead>
+<tbody>
+<tr><td><code>mkdirSync('../exists')</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('..\\exists')</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('./../exists')</code> / <code>'.\\..\\exists'</code> (starts with <code>./</code>)</td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('inner/../../exists')</code> (an inner <code>..</code> climbs above)</td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('../sub/inner')</code> / <code>'../sub/../exists'</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync(absolute path)</code></td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('inner')</code> / <code>'./inner'</code> / <code>'inner/../inner'</code> (stays inside)</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('../new-dir')</code> 1st call (not there yet)</td><td>✅ created</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>mkdirSync('../new-dir')</code> 2nd call (already there)</td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>fs.promises.mkdir('../exists')</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>fs.mkdir('../exists', cb)</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+</tbody></table></div>
+<p>Bun output (verbatim, absolute path masked):</p>
+<pre><code class="language-text">NG   ../exists  EEXIST EEXIST: file already exists, mkdir '..\exists'
+NG   ..\exists  EEXIST EEXIST: file already exists, mkdir '..\exists'
+NG   ./../exists  EEXIST EEXIST: file already exists, mkdir '..\exists'
+NG   .\..\exists  EEXIST EEXIST: file already exists, mkdir '..\exists'
+NG   inner/../../exists  EEXIST EEXIST: file already exists, mkdir '..\exists'
+NG   ../sub/inner  EEXIST EEXIST: file already exists, mkdir '..\sub\inner'
+NG   ../sub/../exists  EEXIST EEXIST: file already exists, mkdir '..\exists'
+OK   &lt;absolute path&gt;\exists
+OK   inner
+OK   ./inner
+OK   inner/../inner
+OK   ../new-dir
+NG   ../new-dir  EEXIST EEXIST: file already exists, mkdir '..\new-dir'
+NG   fs.promises.mkdir ../exists  EEXIST
+NG   fs.mkdir ../exists  EEXIST</code></pre>
+<h2>Findings</h2>
+<ul>
+<li>It happens only when the path, after <code>.</code> and <code>..</code> are collapsed, starts with <code>..</code> (points above the current directory) and the directory exists, with either <code>/</code> or <code>\</code> as the separator</li>
+<li>The path does not have to start with <code>..</code>: <code>./../exists</code> and <code>inner/../../exists</code> (an inner <code>..</code> that climbs above) fail too. The path in the error message is the collapsed form (<code>..\exists</code>)</li>
+<li>Paths that stay inside after collapsing (<code>inner/../inner</code>, <code>./inner</code>, <code>inner</code>) and absolute paths work</li>
+<li>All three APIs fail: sync, promise and callback</li>
+<li>The <code>warn: internal error: OBJECT_NAME_INVALID</code> line reported in #17332 (Bun 1.2.2) is no longer printed on 1.4.3</li>
+<li>Workaround: pass an absolute path from <code>path.resolve()</code></li>
+</ul>
+</section>
+
+<section class="ch03" id="ch03">
+<h1>Existing issue and fix PR</h1>
+<p>An issue with the same symptom already exists, and a fix PR is open. <strong>Instead of filing a new issue, we add a comment to the existing one.</strong></p>
+<ul>
+<li><a href="https://github.com/oven-sh/bun/issues/17332">oven-sh/bun#17332</a> Bun crashes when creating duplicate directory in path starting with ../ (opened 2025-02-14, OPEN, labels <code>bug</code> <code>windows</code> <code>node:fs</code>). It reports <code>mkdir</code> from <code>fs/promises</code> only</li>
+<li><a href="https://github.com/oven-sh/bun/pull/42014">oven-sh/bun#42014</a> sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at (opened 2026-09-08, OPEN, review required). Its description says <code>Fixes #17332</code></li>
+</ul>
+<h2>The cause given in PR #42014</h2>
+<p>According to the PR description (we have not read the source):</p>
+<ol>
+<li>Recursive <code>fs.mkdir</code> calls <code>CreateDirectoryW</code>; on <code>EEXIST</code> it asks <code>directory_exists_at_w</code> whether the existing entry is a directory</li>
+<li>That probe calls NT directly. <code>to_nt_path</code>, which builds the name, only flips separators and does not resolve <code>.</code> or <code>..</code>. NT takes <code>..</code> as a literal name, so the probe fails</li>
+<li>Because the probe fails, the entry is not treated as a directory, and <code>EEXIST</code> is returned</li>
+<li>The recursive walk first collapses <code>.</code> and <code>..</code> lexically. A <code>..</code> left at the start after collapsing cannot be resolved without the directory's path, so it reaches NT as is</li>
+</ol>
+<p>This matches our results: <code>inner/../inner</code> collapses to <code>inner</code> and works, while <code>inner/../../exists</code> collapses to <code>..\exists</code> and fails.</p>
+<h2>Checked with the PR #42014 build</h2>
+<p>We downloaded the Windows x64 build <code>bun-windows-x64.zip</code> from the PR's CI (<a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>). Its SHA-256 matched the listed value, and its version was <code>1.4.3-canary.1+cfff26e9a</code> (the PR head commit). With this build, all 14 tests and every line of the repro script pass (see the table in <a href="#ch04">How to reproduce</a>).</p>
+<div class="callout"><strong>Not verified</strong>: whether it happens on Linux or macOS (the PR says its tests pass on Linux before and after the change).</div>
+</section>
+
+<section class="ch04" id="ch04">
+<h1>How to reproduce</h1>
+<h2>Repro script</h2>
+<p>Run <a href="repro.ts">research/repro.ts</a> in an empty folder.</p>
+<pre><code class="language-powershell">bun repro.ts
+node repro.ts
+deno run -A repro.ts</code></pre>
+<h2>Tests</h2>
+<p><a href="../tests/mkdir-recursive.test.ts">tests/mkdir-recursive.test.ts</a> is written with <code>node:test</code>, so the same file runs on all three runtimes. <code>tools\40_test\run-tests.cmd</code> runs it on node, deno and bun in that order and prints a summary.</p>
+<div class="tablewrap"><table>
+<thead><tr><th>Runtime</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Node.js v26.11.1</td><td>✅ 14 passed</td></tr>
+<tr><td>Deno 2.9.7</td><td>✅ 14 passed</td></tr>
+<tr><td>Bun 1.4.3</td><td>❌ 4 passed, 10 failed (the 10 paths pointing above the current directory)</td></tr>
+<tr><td>Bun 1.4.3-canary.1+cfff26e9a (PR #42014 build)</td><td>✅ 14 passed</td></tr>
+</tbody></table></div>
+</section>
+</div>
+
+<footer><div class="navbar"><a href="../README.html" title="Home">⌂</a><a href="mkdir-eexist-results-JP.html" title="日本語">日本語</a></div></footer>
+</body>
+</html>

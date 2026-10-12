@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bun#17332 へのコメント（案）</title>
+<style>
+:root {
+	--navy1: #12224d; --navy2: #2f5fbf; --ink: #1c2330; --ink-soft: #4a5568;
+	--line: #d9dfe8; --code-bg: #f4f6fa; --link: #1a4fa0;
+	--accent: var(--navy1); --accent2: var(--navy2); --soft: #f2f5fb;
+}
+body { margin: 0; background: #fff; color: var(--ink); font-size: 15.5px; line-height: 1.85; font-family: "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif; }
+a { color: var(--link, #1a4fa0); background: transparent; }
+.titlebar { background: linear-gradient(135deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; padding: 34px 30px 30px; }
+.titlebar .inner { max-width: 1600px; margin: 0 auto; }
+.titlebar h1 { font-size: 1.8em; margin: 0 0 6px; color: #fff; }
+.titlebar .lead, .titlebar .date { color: #e6ecf8; background: transparent; font-size: 0.92em; margin: 2px 0; }
+.wrap { max-width: 1600px; margin: 0 auto; padding: 0 30px; }
+.navbar { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.navbar a { display: inline-block; padding: 0 9px; border-radius: 6px; background: linear-gradient(100deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
+.ch01 { --accent: hsl(280,78%,25%); --accent2: hsl(280,58%,55%); --soft: hsl(280,28%,95%); }
+.ch02 { --accent: hsl(186.7,78%,25%); --accent2: hsl(186.7,58%,55%); --soft: hsl(186.7,28%,95%); }
+.ch03 { --accent: hsl(93.3,78%,25%); --accent2: hsl(93.3,58%,55%); --soft: hsl(93.3,28%,95%); }
+.ch04 { --accent: hsl(0,78%,25%); --accent2: hsl(0,58%,55%); --soft: hsl(0,28%,95%); }
+.toc ol { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; counter-reset: tocnum; }
+.toc ol li { counter-increment: tocnum; }
+.toc ol a { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal; width: 310px; max-width: 100%; padding: 6px 12px; border-radius: 6px; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
+.toc ol a::before { content: counter(tocnum) ". "; }
+section { margin: 34px 0; padding: 4px 26px 26px; border-radius: 10px; background: linear-gradient(180deg, var(--soft, #f2f5fb), #fff); color: var(--ink); }
+section h1 { margin: 26px 0 20px; padding: 14px 20px; border-radius: 8px; font-size: 1.45em; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.18); }
+section h2 { margin: 30px 0 12px; padding: 6px 12px; font-size: 1.15em; border-left: 6px solid var(--accent, #12224d); background: linear-gradient(90deg, var(--soft, #f2f5fb), #fff); color: var(--accent, #12224d); }
+code { background: var(--code-bg, #f4f6fa); border: 1px solid var(--line, #d9dfe8); color: #17335f; padding: 0 4px; border-radius: 4px; font-size: 0.9em; }
+pre { padding: 13px 16px; overflow-x: auto; border-left: 5px solid var(--accent2, #2f5fbf); background: linear-gradient(180deg, var(--code-bg, #f4f6fa), #fff); color: var(--ink); }
+pre code { border: none; background: transparent; padding: 0; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.08); margin: 10px 0; }
+th { padding: 9px 12px; text-align: left; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; }
+td { padding: 9px 12px; vertical-align: top; border-top: 1px solid var(--line, #d9dfe8); background: #fff; color: var(--ink); }
+tr:nth-child(even) td { background: #fafbfe; color: var(--ink); }
+.nowrap { white-space: nowrap; }
+.callout { border-left: 6px solid var(--accent, #12224d); background: linear-gradient(180deg, var(--soft, #f2f5fb), #fff); color: var(--ink); border-radius: 0 8px 8px 0; padding: 8px 16px; margin: 14px 0; }
+.callout strong { color: var(--accent, #12224d); background: transparent; }
+footer { max-width: 1600px; margin: 0 auto; padding: 18px 30px 30px; }
+footer .navbar { margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="titlebar"><div class="inner">
+<h1>bun#17332 へのコメント（案）</h1>
+<p class="lead">oven-sh/bun#17332 に付けるコメントの本文と日本語訳。まだ投稿していない</p>
+<p class="date">📅 作成: 2026-10-12 / 更新: 2026-10-12</p>
+</div></div>
+
+<div class="wrap">
+<div class="navbar"><a href="../README-JP.html" title="目次">⌂</a><a href="bun-17332-comment.html" title="English">English</a></div>
+
+<nav class="toc"><ol>
+<li class="ch01"><a href="#ch01">新しい issue を立てない理由</a></li>
+<li class="ch02"><a href="#ch02">投稿する本文の訳</a></li>
+</ol></nav>
+
+<section class="ch01" id="ch01">
+<h1>新しい issue を立てない理由</h1>
+<ul>
+<li>同じ症状の <a href="https://github.com/oven-sh/bun/issues/17332">oven-sh/bun#17332</a> が 2025-02-14 から OPEN のまま残っている</li>
+<li>修正の <a href="https://github.com/oven-sh/bun/pull/42014">oven-sh/bun#42014</a> が出ていて、レビュー待ち（<code>Fixes #17332</code>）</li>
+<li>新しい issue は重複として閉じられる。#17332 に、1.4.3 でも起きることと、今回分かった範囲（同期・コールバックでも起きる、<code>../</code> で始まるパスに限らない、Node.js ・ Deno では起きない）を足すほうが役に立つ</li>
+</ul>
+<p>投稿する本文（英語）は <a href="bun-17332-comment.html">英語版</a> にある。</p>
+</section>
+
+<section class="ch02" id="ch02">
+<h1>投稿する本文の訳</h1>
+<ul>
+<li>Bun 1.4.3（c6da4a4d3）、Windows 11 10.0.26300 x64 でまだ再現する</li>
+<li><code>fs/promises</code> だけではない。<code>fs.mkdirSync</code> ・ <code>fs.promises.mkdir</code> ・ コールバックの <code>fs.mkdir</code> のすべてで <code>EEXIST</code> になる</li>
+<li><code>../</code> で始まるパスに限らない。<code>.</code> ・ <code>..</code> を畳んだパスがまだ <code>..</code> で始まり（カレントより上を指し）、フォルダが既にあれば起きる。<code>./../x</code> ・ <code>.\..\x</code> ・ <code>inner/../../x</code> ・ <code>../sub/x</code> も失敗し、エラーメッセージには畳んだパス（<code>'..\x'</code>）が出る。カレントの中に留まるパス（<code>x</code> ・ <code>./x</code> ・ <code>x/../x</code>）と絶対パスは通る</li>
+<li><code>../new-dir</code> を作る 1 回目は通り、2 回目で失敗する</li>
+<li>元の報告にあった <code>warn: internal error: OBJECT_NAME_INVALID</code> の行は、もう出ない</li>
+<li>Node.js v26.11.1 と Deno 2.9.7 は、すべての場合で通る</li>
+<li>（結果の表。<a href="../research/mkdir-eexist-results-JP.html">調査結果</a> の表と同じ）</li>
+<li>回避策: <code>path.resolve(p)</code> を渡す</li>
+<li>再現コードと、3 つのランタイムでそのまま流れる <code>node:test</code> のテストは、このリポジトリにある</li>
+<li>#42014 で直る。その Windows x64 の CI ビルド（<code>1.4.3-canary.1+cfff26e9a</code>。Buildkite #113149 の <code>bun-windows-x64.zip</code>、SHA-256 を照合済み）で同じテストを流すと、上の表で ❌ の行も含めて 14 件すべてが通った。説明している原因「字面で畳んだあと先頭に残る <code>..</code> が、解決されないまま NT のフォルダ確認に渡る」も、上の結果と合う</li>
+</ul>
+</section>
+</div>
+
+<footer><div class="navbar"><a href="../README-JP.html" title="目次">⌂</a><a href="bun-17332-comment.html" title="English">English</a></div></footer>
+</body>
+</html>
