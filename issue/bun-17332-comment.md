@@ -13,7 +13,7 @@ The comment posted on oven-sh/bun#17332 on 2026-10-12
 Posted on [oven-sh/bun#17332](https://github.com/oven-sh/bun/issues/17332) on 2026-10-12 ([the posted comment](https://github.com/oven-sh/bun/issues/17332#issuecomment-6118179563)). The block below is the current text.
 
 > [!IMPORTANT]
-> **Edited after posting**: the last paragraph first said that #42014 fixes this and that all 14 cases pass. Later we found that `./`, `.\` and `sub/..` still throw `ENOENT` with the #42014 and #42635 builds, so the paragraph was replaced with an update that links the new issue [#45059](https://github.com/oven-sh/bun/issues/45059) ([its evidence](bun-mkdir-enoent-issue.md)).
+> **Edited after posting**: the last paragraph first said that [#42014](https://github.com/oven-sh/bun/pull/42014) fixes this and that all 14 cases pass. Later we found that `./`, `.\` and `sub/..` still throw `ENOENT` with the [#42014](https://github.com/oven-sh/bun/pull/42014) and [#42635](https://github.com/oven-sh/bun/pull/42635) builds, so the paragraph was replaced with an update that links the new issue [#45059](https://github.com/oven-sh/bun/issues/45059) ([its evidence](bun-mkdir-enoent-issue.md)).
 
 ```markdown
 Still reproduces on Bun 1.4.3 (c6da4a4d3), Windows 11 10.0.26300 x64. Some additional data:

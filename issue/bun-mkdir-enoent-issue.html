@@ -46,7 +46,7 @@ footer .navbar { margin-top: 0; }
 <div class="titlebar"><div class="inner">
 <h1>Recursive mkdir ENOENT</h1>
 <p class="lead">On Windows, Bun's recursive mkdir of "./", ".\" or "sub/.." throws ENOENT. The open fix PRs #42014 and #42635 do not fix it</p>
-<p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-12</p>
+<p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-16</p>
 </div></div>
 
 <div class="wrap">
@@ -64,7 +64,7 @@ footer .navbar { margin-top: 0; }
 <ul>
 <li>On Windows, <code>fs.mkdirSync(p, { recursive: true })</code> throws <code>ENOENT</code> with an empty path for <code>p</code> = <code>./</code>, <code>.\</code> or <code>sub/..</code>. All three name the current directory, which exists. <code>fs.promises.mkdir</code> and callback <code>fs.mkdir</code> fail the same way</li>
 <li>Node.js v26.11.1 and Deno 2.9.7 return without an error</li>
-<li><strong>The open fix PRs #42014 and #42635 do not fix it.</strong> Only #40536 does</li>
+<li><strong>The open fix PRs <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> and <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a> do not fix it.</strong> <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> does. <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a>, opened on 2026-10-16 with <code>Fixes #45059</code>, does too (it does not touch the <code>..</code>-prefixed EEXIST cases)</li>
 <li>Cause: <code>os_path_kernel32</code> normalizes these paths into an empty string, and only the exact input <code>"."</code> is special-cased (<a href="#ch03">Evidence: source</a>)</li>
 <li>A possible fix: if the normalized result is empty, use <code>"."</code> (move the <code>"."</code> special case after the normalization)</li>
 </ul>
@@ -79,22 +79,23 @@ footer .navbar { margin-top: 0; }
 <thead><tr><th>Runtime</th><th>Version</th><th>Source</th></tr></thead>
 <tbody>
 <tr><td class="nowrap">Bun 1.4.3</td><td><code>1.4.3+c6da4a4d3</code></td><td>release (<code>bun upgrade</code>)</td></tr>
-<tr><td class="nowrap">PR #42014</td><td><code>1.4.3-canary.1+cfff26e9a</code></td><td><a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>, SHA-256 <code>6f3415d871f3645620b01e22f27eb708a7267510277dd96a4816d455d5c8323e</code></td></tr>
-<tr><td class="nowrap">PR #42635</td><td><code>1.4.3-canary.1+891eb8df5</code></td><td><a href="https://buildkite.com/bun/bun/builds/115200">Buildkite #115200</a>, SHA-256 <code>6621af0f0afabbcfe8036403e0ff70a341eae63b741be8389992edfed019c0d2</code></td></tr>
-<tr><td class="nowrap">PR #40536</td><td><code>1.4.1-canary.1+8c04559b9</code></td><td><a href="https://buildkite.com/bun/bun/builds/106239">Buildkite #106239</a>, SHA-256 <code>8c8e13a081f26b85e9c0c11c65a2be8687237d02e61e669fb71ce04c5b164d95</code></td></tr>
+<tr><td class="nowrap">PR <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a></td><td><code>1.4.3-canary.1+cfff26e9a</code></td><td><a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>, SHA-256 <code>6f3415d871f3645620b01e22f27eb708a7267510277dd96a4816d455d5c8323e</code></td></tr>
+<tr><td class="nowrap">PR <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a></td><td><code>1.4.3-canary.1+891eb8df5</code></td><td><a href="https://buildkite.com/bun/bun/builds/115200">Buildkite #115200</a>, SHA-256 <code>6621af0f0afabbcfe8036403e0ff70a341eae63b741be8389992edfed019c0d2</code></td></tr>
+<tr><td class="nowrap">PR <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a></td><td><code>1.4.1-canary.1+8c04559b9</code></td><td><a href="https://buildkite.com/bun/bun/builds/106239">Buildkite #106239</a>, SHA-256 <code>8c8e13a081f26b85e9c0c11c65a2be8687237d02e61e669fb71ce04c5b164d95</code></td></tr>
+<tr><td class="nowrap">PR <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a></td><td><code>1.4.4-canary.1+94fbd3674</code></td><td><a href="https://buildkite.com/bun/bun/builds/126187">Buildkite #126187</a>, SHA-256 <code>8a0b522fb15843a3d38ddd019c179894c961dcfdf79c083d2f02a5c0522b79ee</code> (the SHA-1 matched the value listed by Buildkite)</td></tr>
 <tr><td class="nowrap">Node.js</td><td><code>v26.11.1</code></td><td>release</td></tr>
 <tr><td class="nowrap">Deno</td><td><code>2.9.7</code></td><td>release</td></tr>
 </tbody></table></div>
 <h2>Results</h2>
 <p>The same result for <code>mkdirSync</code>, <code>fs.promises.mkdir</code> and callback <code>fs.mkdir</code>.</p>
 <div class="tablewrap"><table>
-<thead><tr><th>Path</th><th class="nowrap">Bun 1.4.3</th><th class="nowrap">PR #42014</th><th class="nowrap">PR #42635</th><th class="nowrap">PR #40536</th><th class="nowrap">Node.js</th><th class="nowrap">Deno</th></tr></thead>
+<thead><tr><th>Path</th><th class="nowrap">Bun 1.4.3</th><th class="nowrap">PR #42014</th><th class="nowrap">PR #42635</th><th class="nowrap">PR #40536</th><th class="nowrap">PR #45410</th><th class="nowrap">Node.js</th><th class="nowrap">Deno</th></tr></thead>
 <tbody>
-<tr><td><code>.</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td><code>./</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td><code>.\</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td><code>sub/..</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td><code>sub/.</code></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>.</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>./</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>.\</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>sub/..</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>sub/.</code></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
 </tbody></table></div>
 <h2>Output of repro-enoent.cjs (verbatim)</h2>
 <p>Bun 1.4.3:</p>
@@ -113,7 +114,7 @@ NG promises sub/.. ENOENT
 NG callback sub/.. ENOENT
 OK promises sub/.
 OK callback sub/.</code></pre>
-<p>PR #42014 and PR #42635 (identical output):</p>
+<p>PR <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> and PR <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a> (identical output):</p>
 <pre><code class="language-text">OK .
 NG ./ ENOENT ENOENT: no such file or directory, mkdir
 NG .\ ENOENT ENOENT: no such file or directory, mkdir
@@ -129,7 +130,7 @@ NG promises sub/.. ENOENT
 NG callback sub/.. ENOENT
 OK promises sub/.
 OK callback sub/.</code></pre>
-<p>PR #40536, Node.js and Deno (identical output):</p>
+<p>PR <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a>, PR <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a>, Node.js and Deno (identical output):</p>
 <pre><code class="language-text">OK .
 OK ./
 OK .\
@@ -179,8 +180,9 @@ OK callback sub/.</code></pre>
 <tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42014">#42014</a></td><td>Resolves <code>.</code> and <code>..</code> in names passed to NT against the directory handle (<code>nt_object_name_at</code> in <code>src/sys/lib.rs</code>)</td><td class="nowrap">❌ <code>os_path_kernel32</code> unchanged</td></tr>
 <tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42635">#42635</a></td><td>Replaces the existence check with libuv's Win32 stat (<code>stat_w</code>)</td><td class="nowrap">❌ <code>os_path_kernel32</code> unchanged</td></tr>
 <tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/40536">#40536</a></td><td>At the entry of recursive mkdir in <code>src/runtime/node/node_fs.rs</code>, joins a relative path onto the cwd (<code>join_cwd_windows</code>) and normalizes the joined path</td><td>✅ the joined path normalizes to the cwd, not an empty string</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/45410">#45410</a></td><td>In <code>os_path_kernel32</code> itself: if the normalized relative path is empty and the input was not, uses the cwd from <code>getcwd</code>. The exact-<code>"."</code> special case is removed</td><td>✅ the empty string never reaches kernel32. It leaves the <code>..</code>-prefixed EEXIST cases to <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a></td></tr>
 </tbody></table></div>
-<p>#42635's description also notes that <code>child\..</code> still reports <code>ENOENT</code> with that PR and says #40536 covers it. #40536 is based on 1.4.1 and has not been updated since 2026-08-26.</p>
+<p><a href="https://github.com/oven-sh/bun/pull/42635">#42635</a>'s description also notes that <code>child\..</code> still reports <code>ENOENT</code> with that PR and says <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> covers it. <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> is based on 1.4.1 and has not been updated since 2026-08-26.</p>
 </section>
 </div>
 

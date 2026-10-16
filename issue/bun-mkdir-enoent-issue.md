@@ -2,7 +2,7 @@
 
 On Windows, Bun's recursive mkdir of "./", ".\" or "sub/.." throws ENOENT. The open fix PRs #42014 and #42635 do not fix it
 
-> 📅 Created: 2026-10-12 / Updated: 2026-10-12
+> 📅 Created: 2026-10-12 / Updated: 2026-10-16
 
 [⌂](../README.md)
 
@@ -18,7 +18,7 @@ Filed as [oven-sh/bun#45059](https://github.com/oven-sh/bun/issues/45059) on 202
 
 - On Windows, `fs.mkdirSync(p, { recursive: true })` throws `ENOENT` with an empty path for `p` = `./`, `.\` or `sub/..`. All three name the current directory, which exists. `fs.promises.mkdir` and callback `fs.mkdir` fail the same way
 - Node.js v26.11.1 and Deno 2.9.7 return without an error
-- **The open fix PRs #42014 and #42635 do not fix it.** Only #40536 does
+- **The open fix PRs [#42014](https://github.com/oven-sh/bun/pull/42014) and [#42635](https://github.com/oven-sh/bun/pull/42635) do not fix it.** [#40536](https://github.com/oven-sh/bun/pull/40536) does. [#45410](https://github.com/oven-sh/bun/pull/45410), opened on 2026-10-16 with `Fixes #45059`, does too (it does not touch the `..`-prefixed EEXIST cases)
 - Cause: `os_path_kernel32` normalizes these paths into an empty string, and only the exact input `"."` is special-cased ([Evidence: source](#3-evidence-source))
 - A possible fix: if the normalized result is empty, use `"."` (move the `"."` special case after the normalization)
 
@@ -33,9 +33,10 @@ Windows 11 Home 10.0.26300 x64. The PR builds are `bun-windows-x64.zip` from eac
 | Runtime | Version | Source |
 |---|---|---|
 | Bun 1.4.3 | `1.4.3+c6da4a4d3` | release (`bun upgrade`) |
-| PR #42014 | `1.4.3-canary.1+cfff26e9a` | [Buildkite #113149](https://buildkite.com/bun/bun/builds/113149), SHA-256 `6f3415d871f3645620b01e22f27eb708a7267510277dd96a4816d455d5c8323e` |
-| PR #42635 | `1.4.3-canary.1+891eb8df5` | [Buildkite #115200](https://buildkite.com/bun/bun/builds/115200), SHA-256 `6621af0f0afabbcfe8036403e0ff70a341eae63b741be8389992edfed019c0d2` |
-| PR #40536 | `1.4.1-canary.1+8c04559b9` | [Buildkite #106239](https://buildkite.com/bun/bun/builds/106239), SHA-256 `8c8e13a081f26b85e9c0c11c65a2be8687237d02e61e669fb71ce04c5b164d95` |
+| PR [#42014](https://github.com/oven-sh/bun/pull/42014) | `1.4.3-canary.1+cfff26e9a` | [Buildkite #113149](https://buildkite.com/bun/bun/builds/113149), SHA-256 `6f3415d871f3645620b01e22f27eb708a7267510277dd96a4816d455d5c8323e` |
+| PR [#42635](https://github.com/oven-sh/bun/pull/42635) | `1.4.3-canary.1+891eb8df5` | [Buildkite #115200](https://buildkite.com/bun/bun/builds/115200), SHA-256 `6621af0f0afabbcfe8036403e0ff70a341eae63b741be8389992edfed019c0d2` |
+| PR [#40536](https://github.com/oven-sh/bun/pull/40536) | `1.4.1-canary.1+8c04559b9` | [Buildkite #106239](https://buildkite.com/bun/bun/builds/106239), SHA-256 `8c8e13a081f26b85e9c0c11c65a2be8687237d02e61e669fb71ce04c5b164d95` |
+| PR [#45410](https://github.com/oven-sh/bun/pull/45410) | `1.4.4-canary.1+94fbd3674` | [Buildkite #126187](https://buildkite.com/bun/bun/builds/126187), SHA-256 `8a0b522fb15843a3d38ddd019c179894c961dcfdf79c083d2f02a5c0522b79ee` (the SHA-1 matched the value listed by Buildkite) |
 | Node.js | `v26.11.1` | release |
 | Deno | `2.9.7` | release |
 
@@ -43,13 +44,13 @@ Windows 11 Home 10.0.26300 x64. The PR builds are `bun-windows-x64.zip` from eac
 
 The same result for `mkdirSync`, `fs.promises.mkdir` and callback `fs.mkdir`.
 
-| Path | Bun 1.4.3 | PR #42014 | PR #42635 | PR #40536 | Node.js | Deno |
-|---|---|---|---|---|---|---|
-| `.` | ❌ EEXIST | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `./` | ❌ ENOENT | ❌ ENOENT | ❌ ENOENT | ✅ | ✅ | ✅ |
-| `.\` | ❌ ENOENT | ❌ ENOENT | ❌ ENOENT | ✅ | ✅ | ✅ |
-| `sub/..` | ❌ ENOENT | ❌ ENOENT | ❌ ENOENT | ✅ | ✅ | ✅ |
-| `sub/.` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Path | Bun 1.4.3 | PR #42014 | PR #42635 | PR #40536 | PR #45410 | Node.js | Deno |
+|---|---|---|---|---|---|---|---|
+| `.` | ❌ EEXIST | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `./` | ❌ ENOENT | ❌ ENOENT | ❌ ENOENT | ✅ | ✅ | ✅ | ✅ |
+| `.\` | ❌ ENOENT | ❌ ENOENT | ❌ ENOENT | ✅ | ✅ | ✅ | ✅ |
+| `sub/..` | ❌ ENOENT | ❌ ENOENT | ❌ ENOENT | ✅ | ✅ | ✅ | ✅ |
+| `sub/.` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 ### Output of repro-enoent.cjs (verbatim)
 
@@ -73,7 +74,7 @@ OK promises sub/.
 OK callback sub/.
 ```
 
-PR #42014 and PR #42635 (identical output):
+PR [#42014](https://github.com/oven-sh/bun/pull/42014) and PR [#42635](https://github.com/oven-sh/bun/pull/42635) (identical output):
 
 ```text
 OK .
@@ -93,7 +94,7 @@ OK promises sub/.
 OK callback sub/.
 ```
 
-PR #40536, Node.js and Deno (identical output):
+PR [#40536](https://github.com/oven-sh/bun/pull/40536), PR [#45410](https://github.com/oven-sh/bun/pull/45410), Node.js and Deno (identical output):
 
 ```text
 OK .
@@ -149,8 +150,9 @@ OK callback sub/.
 | [#42014](https://github.com/oven-sh/bun/pull/42014) | Resolves `.` and `..` in names passed to NT against the directory handle (`nt_object_name_at` in `src/sys/lib.rs`) | ❌ `os_path_kernel32` unchanged |
 | [#42635](https://github.com/oven-sh/bun/pull/42635) | Replaces the existence check with libuv's Win32 stat (`stat_w`) | ❌ `os_path_kernel32` unchanged |
 | [#40536](https://github.com/oven-sh/bun/pull/40536) | At the entry of recursive mkdir in `src/runtime/node/node_fs.rs`, joins a relative path onto the cwd (`join_cwd_windows`) and normalizes the joined path | ✅ the joined path normalizes to the cwd, not an empty string |
+| [#45410](https://github.com/oven-sh/bun/pull/45410) | In `os_path_kernel32` itself: if the normalized relative path is empty and the input was not, uses the cwd from `getcwd`. The exact-`"."` special case is removed | ✅ the empty string never reaches kernel32. It leaves the `..`-prefixed EEXIST cases to [#42014](https://github.com/oven-sh/bun/pull/42014) |
 
-#42635's description also notes that `child\..` still reports `ENOENT` with that PR and says #40536 covers it. #40536 is based on 1.4.1 and has not been updated since 2026-08-26.
+[#42635](https://github.com/oven-sh/bun/pull/42635)'s description also notes that `child\..` still reports `ENOENT` with that PR and says [#40536](https://github.com/oven-sh/bun/pull/40536) covers it. [#40536](https://github.com/oven-sh/bun/pull/40536) is based on 1.4.1 and has not been updated since 2026-08-26.
 
 [⌂](../README.md)
 

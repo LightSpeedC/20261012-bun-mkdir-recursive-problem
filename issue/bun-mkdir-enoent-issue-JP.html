@@ -46,7 +46,7 @@ footer .navbar { margin-top: 0; }
 <div class="titlebar"><div class="inner">
 <h1>recursive mkdir の ENOENT</h1>
 <p class="lead">Windows の Bun で、"./" ・ ".\" ・ "sub/.." を recursive mkdir すると ENOENT になる。修正 PR の #42014 と #42635 では直らない</p>
-<p class="date">📅 作成: 2026-10-12 / 更新: 2026-10-12</p>
+<p class="date">📅 作成: 2026-10-12 / 更新: 2026-10-16</p>
 </div></div>
 
 <div class="wrap">
@@ -64,7 +64,7 @@ footer .navbar { margin-top: 0; }
 <ul>
 <li>Windows で <code>fs.mkdirSync(p, { recursive: true })</code> に <code>./</code> ・ <code>.\</code> ・ <code>sub/..</code> を渡すと、パスが空の <code>ENOENT</code> になる。3 つともカレント自身を指し、カレントは存在する。<code>fs.promises.mkdir</code> とコールバックの <code>fs.mkdir</code> も同じように失敗する</li>
 <li>Node.js v26.11.1 と Deno 2.9.7 は、エラーにせずに返る</li>
-<li><strong>修正 PR の #42014 と #42635 では直らない。</strong>直るのは #40536 だけ</li>
+<li><strong>修正 PR の <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> と <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a> では直らない。</strong><a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> は直す。2026-10-16 に出た <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a>（<code>Fixes #45059</code>）も直す（<code>..</code> で始まる EEXIST の件には手を付けていない）</li>
 <li>原因: <code>os_path_kernel32</code> がこれらのパスを正規化して空の文字列にする。特別に扱うのは、ちょうど <code>"."</code> の入力だけ（<a href="#ch03">エビデンス: ソース</a>）</li>
 <li>直し方の候補: 正規化の結果が空なら <code>"."</code> にする（<code>"."</code> の特別扱いを、正規化の後ろへ移す）</li>
 </ul>
@@ -79,22 +79,23 @@ footer .navbar { margin-top: 0; }
 <thead><tr><th>ランタイム</th><th>版</th><th>入手元</th></tr></thead>
 <tbody>
 <tr><td class="nowrap">Bun 1.4.3</td><td><code>1.4.3+c6da4a4d3</code></td><td>正式版（<code>bun upgrade</code>）</td></tr>
-<tr><td class="nowrap">PR #42014</td><td><code>1.4.3-canary.1+cfff26e9a</code></td><td><a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>, SHA-256 <code>6f3415d871f3645620b01e22f27eb708a7267510277dd96a4816d455d5c8323e</code></td></tr>
-<tr><td class="nowrap">PR #42635</td><td><code>1.4.3-canary.1+891eb8df5</code></td><td><a href="https://buildkite.com/bun/bun/builds/115200">Buildkite #115200</a>, SHA-256 <code>6621af0f0afabbcfe8036403e0ff70a341eae63b741be8389992edfed019c0d2</code></td></tr>
-<tr><td class="nowrap">PR #40536</td><td><code>1.4.1-canary.1+8c04559b9</code></td><td><a href="https://buildkite.com/bun/bun/builds/106239">Buildkite #106239</a>, SHA-256 <code>8c8e13a081f26b85e9c0c11c65a2be8687237d02e61e669fb71ce04c5b164d95</code></td></tr>
+<tr><td class="nowrap">PR <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a></td><td><code>1.4.3-canary.1+cfff26e9a</code></td><td><a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>, SHA-256 <code>6f3415d871f3645620b01e22f27eb708a7267510277dd96a4816d455d5c8323e</code></td></tr>
+<tr><td class="nowrap">PR <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a></td><td><code>1.4.3-canary.1+891eb8df5</code></td><td><a href="https://buildkite.com/bun/bun/builds/115200">Buildkite #115200</a>, SHA-256 <code>6621af0f0afabbcfe8036403e0ff70a341eae63b741be8389992edfed019c0d2</code></td></tr>
+<tr><td class="nowrap">PR <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a></td><td><code>1.4.1-canary.1+8c04559b9</code></td><td><a href="https://buildkite.com/bun/bun/builds/106239">Buildkite #106239</a>, SHA-256 <code>8c8e13a081f26b85e9c0c11c65a2be8687237d02e61e669fb71ce04c5b164d95</code></td></tr>
+<tr><td class="nowrap">PR <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a></td><td><code>1.4.4-canary.1+94fbd3674</code></td><td><a href="https://buildkite.com/bun/bun/builds/126187">Buildkite #126187</a>, SHA-256 <code>8a0b522fb15843a3d38ddd019c179894c961dcfdf79c083d2f02a5c0522b79ee</code>（SHA-1 は Buildkite が示す値と一致した）</td></tr>
 <tr><td class="nowrap">Node.js</td><td><code>v26.11.1</code></td><td>正式版</td></tr>
 <tr><td class="nowrap">Deno</td><td><code>2.9.7</code></td><td>正式版</td></tr>
 </tbody></table></div>
 <h2>結果</h2>
 <p><code>mkdirSync</code> ・ <code>fs.promises.mkdir</code> ・ コールバックの <code>fs.mkdir</code> で、同じ結果になる。</p>
 <div class="tablewrap"><table>
-<thead><tr><th>パス</th><th class="nowrap">Bun 1.4.3</th><th class="nowrap">PR #42014</th><th class="nowrap">PR #42635</th><th class="nowrap">PR #40536</th><th class="nowrap">Node.js</th><th class="nowrap">Deno</th></tr></thead>
+<thead><tr><th>パス</th><th class="nowrap">Bun 1.4.3</th><th class="nowrap">PR #42014</th><th class="nowrap">PR #42635</th><th class="nowrap">PR #40536</th><th class="nowrap">PR #45410</th><th class="nowrap">Node.js</th><th class="nowrap">Deno</th></tr></thead>
 <tbody>
-<tr><td><code>.</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td><code>./</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td><code>.\</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td><code>sub/..</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td></tr>
-<tr><td><code>sub/.</code></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>.</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>./</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>.\</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>sub/..</code></td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td class="nowrap">❌ ENOENT</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td><code>sub/.</code></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
 </tbody></table></div>
 <h2>repro-enoent.cjs の出力（そのまま）</h2>
 <p>Bun 1.4.3:</p>
@@ -113,7 +114,7 @@ NG promises sub/.. ENOENT
 NG callback sub/.. ENOENT
 OK promises sub/.
 OK callback sub/.</code></pre>
-<p>PR #42014 と PR #42635（出力は同じ）:</p>
+<p>PR <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> と PR <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a>（出力は同じ）:</p>
 <pre><code class="language-text">OK .
 NG ./ ENOENT ENOENT: no such file or directory, mkdir
 NG .\ ENOENT ENOENT: no such file or directory, mkdir
@@ -129,7 +130,7 @@ NG promises sub/.. ENOENT
 NG callback sub/.. ENOENT
 OK promises sub/.
 OK callback sub/.</code></pre>
-<p>PR #40536 ・ Node.js ・ Deno（出力は同じ）:</p>
+<p>PR <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> ・ PR <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a> ・ Node.js ・ Deno（出力は同じ）:</p>
 <pre><code class="language-text">OK .
 OK ./
 OK .\
@@ -179,8 +180,9 @@ OK callback sub/.</code></pre>
 <tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42014">#42014</a></td><td>NT に渡す名前の <code>.</code> ・ <code>..</code> を、フォルダのハンドルを基準に解決する（<code>src/sys/lib.rs</code> の <code>nt_object_name_at</code>）</td><td class="nowrap">❌ <code>os_path_kernel32</code> は変えていない</td></tr>
 <tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42635">#42635</a></td><td>既にあるかの確認を、libuv の Win32 の stat（<code>stat_w</code>）に替える</td><td class="nowrap">❌ <code>os_path_kernel32</code> は変えていない</td></tr>
 <tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/40536">#40536</a></td><td><code>src/runtime/node/node_fs.rs</code> の recursive mkdir の入口で、相対パスをカレントと結合して（<code>join_cwd_windows</code>）から正規化する</td><td>✅ 結合したパスは、正規化しても空にならず、カレントになる</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/45410">#45410</a></td><td><code>os_path_kernel32</code> そのものを変える。正規化した相対パスが空で、元の入力が空でないとき、<code>getcwd</code> で得たカレントを使う。ちょうど <code>"."</code> だけの特別扱いは外す</td><td>✅ 空の文字列が kernel32 に渡らない。<code>..</code> で始まる EEXIST の件は <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> に任せている</td></tr>
 </tbody></table></div>
-<p>#42635 の説明にも、その PR で <code>child\..</code> の <code>ENOENT</code> は残り、#40536 が扱う、とある。#40536 は 1.4.1 を元にしていて、2026-08-26 から更新がない。</p>
+<p><a href="https://github.com/oven-sh/bun/pull/42635">#42635</a> の説明にも、その PR で <code>child\..</code> の <code>ENOENT</code> は残り、<a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> が扱う、とある。<a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> は 1.4.1 を元にしていて、2026-08-26 から更新がない。</p>
 </section>
 </div>
 

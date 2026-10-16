@@ -49,7 +49,7 @@ footer .navbar { margin-top: 0; }
 <div class="titlebar"><div class="inner">
 <h1>mkdir recursive の EEXIST ・ ENOENT 調査結果</h1>
 <p class="lead">Windows の Bun で、カレントより上やカレント自身を指す相対パスに <code>fs.mkdir(path, { recursive: true })</code> を使うと EEXIST ・ ENOENT になる。Node.js・Deno と比べた</p>
-<p class="date">📅 作成: 2026-10-12 / 更新: 2026-10-12</p>
+<p class="date">📅 作成: 2026-10-12 / 更新: 2026-10-16</p>
 </div></div>
 
 <div class="wrap">
@@ -122,7 +122,7 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 <li>畳んでもカレントの中に留まるパス（<code>inner/../inner</code> ・ <code>./inner</code> ・ <code>inner</code>）と絶対パスでは起きない</li>
 <li>カレント自身を指すパスも失敗する。<code>.</code> は <code>EEXIST: file already exists, mkdir '.'</code>、末尾に区切りが付く <code>./</code> ・ <code>.\</code> と、畳むとカレントになる <code>inner/..</code> は <code>ENOENT: no such file or directory, mkdir</code>（パスが空のまま出る）になる。<code>inner/.</code> は通る</li>
 <li>同期・Promise・コールバックの 3 つの API すべてで起きる</li>
-<li>#17332（Bun 1.2.2）に出ていた <code>warn: internal error: OBJECT_NAME_INVALID</code> の行は、1.4.3 では出なかった</li>
+<li><a href="https://github.com/oven-sh/bun/issues/17332">#17332</a>（Bun 1.2.2）に出ていた <code>warn: internal error: OBJECT_NAME_INVALID</code> の行は、1.4.3 では出なかった</li>
 <li>回避策: <code>path.resolve()</code> で絶対パスにしてから渡す</li>
 </ul>
 </section>
@@ -133,11 +133,13 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 <ul>
 <li><a href="https://github.com/oven-sh/bun/issues/17332">oven-sh/bun#17332</a> Bun crashes when creating duplicate directory in path starting with ../（2025-02-14 作成、OPEN、ラベル <code>bug</code> <code>windows</code> <code>node:fs</code>）。報告は <code>fs/promises</code> の <code>mkdir</code> だけ</li>
 <li><a href="https://github.com/oven-sh/bun/issues/44576">oven-sh/bun#44576</a> node:fs: recursive mkdir of "." or ".." throws EEXIST on Windows（2026-10-04 作成、OPEN）。<code>.</code> ・ <code>..</code> の EEXIST だけを扱う</li>
+<li><a href="https://github.com/oven-sh/bun/issues/45059">oven-sh/bun#45059</a> Windows: recursive mkdir of <code>./</code>, <code>.\</code> or <code>sub/..</code> throws ENOENT with an empty path（2026-10-12 作成、OPEN、ラベル <code>bug</code> <code>windows</code> <code>node:fs</code>）。このプロジェクトから投稿した</li>
+<li><a href="https://github.com/oven-sh/bun/pull/45410">oven-sh/bun#45410</a> node:fs: resolve a relative path that normalizes to nothing to the cwd on Windows（2026-10-16 作成、OPEN、レビュー待ち）。説明に <code>Fixes #45059</code> とあり、<code>..</code> で始まるパスは <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> に任せると書いてある</li>
 <li><a href="https://github.com/oven-sh/bun/pull/40536">oven-sh/bun#40536</a> node:fs: return the namespaced absolute first path created for a relative recursive mkdir on Windows（2026-08-26 作成、OPEN）。相対パスをカレントと結合し、<code>..</code> を畳んでから処理する</li>
-<li><a href="https://github.com/oven-sh/bun/pull/42635">oven-sh/bun#42635</a> fix(node:fs): preserve Win32 semantics in recursive mkdir checks（2026-09-13 作成、OPEN）。説明に「<code>child\..</code> の ENOENT は残り、#40536 が扱う」とある</li>
+<li><a href="https://github.com/oven-sh/bun/pull/42635">oven-sh/bun#42635</a> fix(node:fs): preserve Win32 semantics in recursive mkdir checks（2026-09-13 作成、OPEN）。説明に「<code>child\..</code> の ENOENT は残り、<a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> が扱う」とある</li>
 <li><a href="https://github.com/oven-sh/bun/pull/42014">oven-sh/bun#42014</a> sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at（2026-09-08 作成、OPEN、レビュー待ち）。本文に <code>Fixes #17332</code> がある</li>
 </ul>
-<h2>PR #42014 が挙げている原因</h2>
+<h2>PR <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> が挙げている原因</h2>
 <p>PR の説明によると、次の流れになる。</p>
 <ol>
 <li>recursive の <code>fs.mkdir</code> は <code>CreateDirectoryW</code> を呼び、<code>EEXIST</code> が返ると、そこにあるものがフォルダかを <code>directory_exists_at_w</code> で調べる</li>
@@ -146,7 +148,7 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 <li>再帰の処理は、先に <code>.</code> ・ <code>..</code> を字面で畳む。畳んだ結果の先頭に残る <code>..</code> は、元のフォルダのパスが無いと畳めないので、そのまま NT に渡る</li>
 </ol>
 <p>この説明は、今回の結果と合う。<code>inner/../inner</code> は畳むと <code>inner</code> になって通り、<code>inner/../../exists</code> は畳むと <code>..\exists</code> になって失敗する。</p>
-<h2>PR #42014 のソースを読んだ</h2>
+<h2>PR <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> のソースを読んだ</h2>
 <p>先頭コミット <code>cfff26e9a</code> の差分を読んだ。直しているのは <code>src/paths/classify.rs</code> と <code>src/sys/lib.rs</code> の 2 つで、残りはテスト。</p>
 <ul>
 <li><code>classify.rs</code>: パスの部品を数える <code>classify_rel_t</code> に、<code>has_dot_component</code>（ちょうど <code>.</code> か <code>..</code> の部品がある）を足した。<code>a.b</code> ・ <code>...</code> は名前として扱う</li>
@@ -157,18 +159,20 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 <li>足したテスト（<code>fs-mkdir.test.ts</code>）のパスは <code>.</code> ・ <code>..</code> ・ <code>../cwd</code> ・ <code>../cwd/sub</code> ・ <code>./sub</code> ・ ファイル。末尾に区切りが付く <code>./</code> と、畳むとカレントになる <code>sub/..</code> は入っていない</li>
 </ul>
 <p>読んだ内容は、PR の説明と合う。</p>
-<h2>PR #42014 のビルドで確かめた</h2>
+<h2>PR <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> のビルドで確かめた</h2>
 <p>PR の CI（<a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>）が作った Windows x64 のビルド <code>bun-windows-x64.zip</code> を取得した。SHA-256 は一覧の値と一致し、版は <code>1.4.3-canary.1+cfff26e9a</code>（PR の先頭コミット）だった。このビルドで、カレントより上を指す場合と <code>.</code> はすべて通った。<strong>カレント自身を指す <code>./</code> ・ <code>.\</code> ・ <code>inner/..</code> の 3 件は、このビルドでも <code>ENOENT</code> になる</strong>（<a href="#ch04">再現の手順</a> の表）。原因は次の「ENOENT の原因」。</p>
 <h2>ほかの PR のビルドで確かめた</h2>
 <p>同じ手順で、<a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> と <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a> の Windows x64 のビルドも取得した。どちらも SHA-256 は一覧の値と一致した。</p>
 <div class="tablewrap"><table>
-<thead><tr><th>PR</th><th>ビルド</th><th>カレントより上・<code>.</code></th><th><code>./</code> ・ <code>.\</code> ・ <code>inner/..</code></th></tr></thead>
+<thead><tr><th>PR</th><th>ビルド</th><th>カレントより上</th><th><code>.</code></th><th><code>./</code> ・ <code>.\</code> ・ <code>inner/..</code></th></tr></thead>
 <tbody>
-<tr><td class="nowrap">#40536</td><td><a href="https://buildkite.com/bun/bun/builds/106239">Buildkite #106239</a>、<code>1.4.1-canary.1+8c04559b9</code></td><td>✅</td><td>✅</td></tr>
-<tr><td class="nowrap">#42635</td><td><a href="https://buildkite.com/bun/bun/builds/115200">Buildkite #115200</a>、<code>1.4.3-canary.1+891eb8df5</code></td><td>✅</td><td class="nowrap">❌ ENOENT</td></tr>
-<tr><td class="nowrap">#42014</td><td>Buildkite #113149、<code>1.4.3-canary.1+cfff26e9a</code></td><td>✅</td><td class="nowrap">❌ ENOENT</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/45410">#45410</a></td><td><a href="https://buildkite.com/bun/bun/builds/126187">Buildkite #126187</a>、<code>1.4.4-canary.1+94fbd3674</code></td><td class="nowrap">❌ EEXIST</td><td>✅</td><td>✅</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/40536">#40536</a></td><td><a href="https://buildkite.com/bun/bun/builds/106239">Buildkite #106239</a>、<code>1.4.1-canary.1+8c04559b9</code></td><td>✅</td><td>✅</td><td>✅</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42635">#42635</a></td><td><a href="https://buildkite.com/bun/bun/builds/115200">Buildkite #115200</a>、<code>1.4.3-canary.1+891eb8df5</code></td><td>✅</td><td>✅</td><td class="nowrap">❌ ENOENT</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42014">#42014</a></td><td><a href="https://buildkite.com/bun/bun/builds/113149">Buildkite #113149</a>、<code>1.4.3-canary.1+cfff26e9a</code></td><td>✅</td><td>✅</td><td class="nowrap">❌ ENOENT</td></tr>
 </tbody></table></div>
-<p><strong>3 つの PR のうち、すべての場合を直すのは #40536 だけ</strong>。#40536 は 1.4.1 を元にしたビルドで、2026-08-26 から更新がない。</p>
+<p><strong>4 つの PR のうち、すべての場合を直すのは <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> だけ</strong>。<a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> は 1.4.1 を元にしたビルドで、2026-08-26 から更新がない。<a href="https://github.com/oven-sh/bun/pull/45410">#45410</a> は <code>.</code> と ENOENT の 3 件を直すが、<strong>カレントより上を指す 10 件は、このビルドでも <code>EEXIST</code> のまま</strong>（PR の説明は、これを <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> が扱うとしている）。<a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> と <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a> は、その逆になる。</p>
+<p><a href="https://github.com/oven-sh/bun/pull/45410">#45410</a> のビルドも同じ手順で調べた。PR の先頭のコミット <code>94fbd3674</code> で、取得したものは Buildkite が示す SHA-1 と一致した。取得した <code>bun-windows-x64.zip</code> の SHA-256 は <code>8a0b522fb15843a3d38ddd019c179894c961dcfdf79c083d2f02a5c0522b79ee</code>。Buildkite のビルド全体は失敗の表示（184 ジョブ中 3 件）だが、Windows x64 のビルドのジョブは終わり、zip が出ていた。</p>
 <h2>ENOENT の原因（ソースで確かめた）</h2>
 <p>Bun 1.4.3（<code>c6da4a4d3</code>）の <code>src/runtime/node/types.rs</code> にある <code>os_path_kernel32</code> が、mkdir に渡す前にパスを字面で正規化する（<code>normalize_string_buf</code>）。</p>
 <ul>
@@ -177,14 +181,15 @@ NG   fs.mkdir ../exists  EEXIST</code></pre>
 <li>空のパスの mkdir は ENOENT になる。エラーメッセージのパスが空なのも、これで説明できる</li>
 <li>カレントより上を指すパスのエラーメッセージに、畳んだ形（<code>..\exists</code>）が出るのも、同じ正規化のため</li>
 </ul>
-<p>直し方の候補: 正規化の結果が空なら <code>.</code> にする（今の <code>.</code> の特別扱いを、正規化の後ろへ移す）。</p>
+<p>直し方の候補: 正規化の結果が空なら <code>.</code> にする（今の <code>.</code> の特別扱いを、正規化の後ろへ移す）。PR <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a> は別の道を取り、空になった結果を <code>getcwd</code> で得たカレントの絶対パスに置き換える。PR の説明は、<code>.</code> にすると <code>./</code> が <code>ENOENT</code> から <code>EEXIST</code> に変わるだけだと書いている（NT の確認が <code>.</code> を解決できないため）。<code>.</code> にする案は、こちらでは試していない。</p>
 <h2>各 PR のソースと、直る・直らない理由</h2>
 <div class="tablewrap"><table>
 <thead><tr><th>PR</th><th>変えているところ</th><th>ENOENT の 3 件</th></tr></thead>
 <tbody>
-<tr><td class="nowrap">#40536</td><td><code>node_fs.rs</code> の recursive mkdir の入口で、相対パスをカレントと結合して（<code>join_cwd_windows</code>）から正規化する</td><td>✅ 結合したあとなので、正規化しても空にならず、カレントの絶対パスになる</td></tr>
-<tr><td class="nowrap">#42635</td><td>既にあるかの確認を、NT の API から libuv の Win32 の stat（<code>stat_w</code>）に替える</td><td>❌ 確認の前の、<code>os_path_kernel32</code> の正規化は変えていない</td></tr>
-<tr><td class="nowrap">#42014</td><td>NT に渡す名前の <code>.</code> ・ <code>..</code> を、フォルダのハンドルを基準に解決する（<code>nt_object_name_at</code>）</td><td>❌ 同じく、<code>os_path_kernel32</code> の正規化は変えていない</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/45410">#45410</a></td><td><code>os_path_kernel32</code> そのものを変える。正規化した相対パスが空で、元の入力が空でないとき、<code>getcwd</code> で得たカレントを使う。ちょうど <code>.</code> だけの特別扱いは外す。<code>existsSync</code> も同じ関数を通る</td><td>✅ 空の文字列が kernel32 に渡らない。❌ カレントより上を指すパスには手を付けていない（PR は <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> に任せている）</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/40536">#40536</a></td><td><code>node_fs.rs</code> の recursive mkdir の入口で、相対パスをカレントと結合して（<code>join_cwd_windows</code>）から正規化する</td><td>✅ 結合したあとなので、正規化しても空にならず、カレントの絶対パスになる</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42635">#42635</a></td><td>既にあるかの確認を、NT の API から libuv の Win32 の stat（<code>stat_w</code>）に替える</td><td>❌ 確認の前の、<code>os_path_kernel32</code> の正規化は変えていない</td></tr>
+<tr><td class="nowrap"><a href="https://github.com/oven-sh/bun/pull/42014">#42014</a></td><td>NT に渡す名前の <code>.</code> ・ <code>..</code> を、フォルダのハンドルを基準に解決する（<code>nt_object_name_at</code>）</td><td>❌ 同じく、<code>os_path_kernel32</code> の正規化は変えていない</td></tr>
 </tbody></table></div>
 <div class="callout"><strong>確かめていないこと</strong>: Linux ・ macOS で起きるか（PR は Linux では修正の前後とも通ると書いている）。</div>
 </section>
@@ -204,9 +209,10 @@ deno run -A repro.ts</code></pre>
 <tr><td>Node.js v26.11.1</td><td>✅ 18 件成功</td></tr>
 <tr><td>Deno 2.9.7</td><td>✅ 18 件成功</td></tr>
 <tr><td>Bun 1.4.3</td><td>❌ 4 件成功 ・ 14 件失敗（カレントより上を指す 10 件と、カレント自身を指す 4 件）</td></tr>
-<tr><td>Bun 1.4.3-canary.1+cfff26e9a（PR #42014 のビルド）</td><td>❌ 15 件成功 ・ 3 件失敗（<code>./</code> ・ <code>.\</code> ・ <code>inner/..</code>）</td></tr>
-<tr><td>Bun 1.4.3-canary.1+891eb8df5（PR #42635 のビルド）</td><td>❌ 15 件成功 ・ 3 件失敗（<code>./</code> ・ <code>.\</code> ・ <code>inner/..</code>）</td></tr>
-<tr><td>Bun 1.4.1-canary.1+8c04559b9（PR #40536 のビルド）</td><td>✅ 18 件成功</td></tr>
+<tr><td>Bun 1.4.4-canary.1+94fbd3674（PR <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a> のビルド）</td><td>❌ 8 件成功 ・ 10 件失敗（カレントより上を指す 10 件）</td></tr>
+<tr><td>Bun 1.4.3-canary.1+cfff26e9a（PR <a href="https://github.com/oven-sh/bun/pull/42014">#42014</a> のビルド）</td><td>❌ 15 件成功 ・ 3 件失敗（<code>./</code> ・ <code>.\</code> ・ <code>inner/..</code>）</td></tr>
+<tr><td>Bun 1.4.3-canary.1+891eb8df5（PR <a href="https://github.com/oven-sh/bun/pull/42635">#42635</a> のビルド）</td><td>❌ 15 件成功 ・ 3 件失敗（<code>./</code> ・ <code>.\</code> ・ <code>inner/..</code>）</td></tr>
+<tr><td>Bun 1.4.1-canary.1+8c04559b9（PR <a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> のビルド）</td><td>✅ 18 件成功</td></tr>
 </tbody></table></div>
 </section>
 </div>

@@ -2,7 +2,7 @@
 
 Windows の Bun で、カレントより上やカレント自身を指す相対パスに fs.mkdir(path, { recursive: true }) を使うと、既にあるフォルダで EEXIST ・ ENOENT になる。Node.js ・ Deno と比べる
 
-> 📅 作成: 2026-10-12 / 更新: 2026-10-12
+> 📅 作成: 2026-10-12 / 更新: 2026-10-16
 
 [⌂](../)
 
@@ -32,6 +32,7 @@ Windows でテストを流すには（node ・ deno ・ bun が PATH にある�
 - [oven-sh/bun#42014](https://github.com/oven-sh/bun/pull/42014) — sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at（修正の PR）
 - [oven-sh/bun#45059](https://github.com/oven-sh/bun/issues/45059) — Windows: recursive mkdir of `./`, `.\` or `sub/..` throws ENOENT with an empty path（このプロジェクトから投稿した issue）
 - [oven-sh/bun#44576](https://github.com/oven-sh/bun/issues/44576) — node:fs: recursive mkdir of "." or ".." throws EEXIST on Windows
+- [oven-sh/bun#45410](https://github.com/oven-sh/bun/pull/45410) — node:fs: resolve a relative path that normalizes to nothing to the cwd on Windows（`Fixes #45059`。そのビルドで、ENOENT と `.` は通るが、カレントより上を指すパスは EEXIST のまま）
 - [oven-sh/bun#42635](https://github.com/oven-sh/bun/pull/42635) — fix(node:fs): preserve Win32 semantics in recursive mkdir checks（`child\..` の ENOENT が残ると書いている PR）
 - [oven-sh/bun#40536](https://github.com/oven-sh/bun/pull/40536) — node:fs: return the namespaced absolute first path created for a relative recursive mkdir on Windows（そのビルドで、ENOENT も含めすべての場合が通った PR）
 

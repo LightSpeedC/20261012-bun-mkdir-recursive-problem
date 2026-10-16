@@ -2,7 +2,7 @@
 
 On Windows, Bun's `fs.mkdir(path, { recursive: true })` throws EEXIST or ENOENT for an existing directory when a relative path points above the current directory or names the current directory itself. Compared with Node.js and Deno
 
-> 📅 Created: 2026-10-12 / Updated: 2026-10-12
+> 📅 Created: 2026-10-12 / Updated: 2026-10-16
 
 [⌂](../README.md)
 
@@ -75,7 +75,7 @@ NG   fs.mkdir ../exists  EEXIST
 - Paths that stay inside after collapsing (`inner/../inner`, `./inner`, `inner`) and absolute paths work
 - Paths that name the current directory itself fail too. `.` throws `EEXIST: file already exists, mkdir '.'`; `./` and `.\` (with a trailing separator) and `inner/..` (collapses to the current directory) throw `ENOENT: no such file or directory, mkdir` (with an empty path). `inner/.` works
 - All three APIs fail: sync, promise and callback
-- The `warn: internal error: OBJECT_NAME_INVALID` line reported in #17332 (Bun 1.2.2) is no longer printed on 1.4.3
+- The `warn: internal error: OBJECT_NAME_INVALID` line reported in [#17332](https://github.com/oven-sh/bun/issues/17332) (Bun 1.2.2) is no longer printed on 1.4.3
 - Workaround: pass an absolute path from `path.resolve()`
 
 ## 3. Existing issues and fix PRs
@@ -84,11 +84,13 @@ An issue with the same symptom already exists, and a fix PR is open. **Instead o
 
 - [oven-sh/bun#17332](https://github.com/oven-sh/bun/issues/17332) Bun crashes when creating duplicate directory in path starting with ../ (opened 2025-02-14, OPEN, labels `bug` `windows` `node:fs`). It reports `mkdir` from `fs/promises` only
 - [oven-sh/bun#44576](https://github.com/oven-sh/bun/issues/44576) node:fs: recursive mkdir of "." or ".." throws EEXIST on Windows (opened 2026-10-04, OPEN). Covers the `.` and `..` EEXIST only
+- [oven-sh/bun#45059](https://github.com/oven-sh/bun/issues/45059) Windows: recursive mkdir of `./`, `.\` or `sub/..` throws ENOENT with an empty path (opened 2026-10-12, OPEN, labels `bug` `windows` `node:fs`). Filed from this project
+- [oven-sh/bun#45410](https://github.com/oven-sh/bun/pull/45410) node:fs: resolve a relative path that normalizes to nothing to the cwd on Windows (opened 2026-10-16, OPEN, review required). Its description says `Fixes #45059`, and that the `..`-prefixed paths are left to [#42014](https://github.com/oven-sh/bun/pull/42014)
 - [oven-sh/bun#40536](https://github.com/oven-sh/bun/pull/40536) node:fs: return the namespaced absolute first path created for a relative recursive mkdir on Windows (opened 2026-08-26, OPEN). Joins a relative path onto the cwd and collapses `..` first
-- [oven-sh/bun#42635](https://github.com/oven-sh/bun/pull/42635) fix(node:fs): preserve Win32 semantics in recursive mkdir checks (opened 2026-09-13, OPEN). Its description says the `child\..` ENOENT remains and is covered by #40536
+- [oven-sh/bun#42635](https://github.com/oven-sh/bun/pull/42635) fix(node:fs): preserve Win32 semantics in recursive mkdir checks (opened 2026-09-13, OPEN). Its description says the `child\..` ENOENT remains and is covered by [#40536](https://github.com/oven-sh/bun/pull/40536)
 - [oven-sh/bun#42014](https://github.com/oven-sh/bun/pull/42014) sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at (opened 2026-09-08, OPEN, review required). Its description says `Fixes #17332`
 
-### The cause given in PR #42014
+### The cause given in PR [#42014](https://github.com/oven-sh/bun/pull/42014)
 
 According to the PR description:
 
@@ -99,7 +101,7 @@ According to the PR description:
 
 This matches our results: `inner/../inner` collapses to `inner` and works, while `inner/../../exists` collapses to `..\exists` and fails.
 
-### Reading the PR #42014 source
+### Reading the PR [#42014](https://github.com/oven-sh/bun/pull/42014) source
 
 We read the diff at the head commit `cfff26e9a`. The fix is in two files, `src/paths/classify.rs` and `src/sys/lib.rs`; the rest are tests.
 
@@ -112,7 +114,7 @@ We read the diff at the head commit `cfff26e9a`. The fix is in two files, `src/p
 
 What we read matches the PR description.
 
-### Checked with the PR #42014 build
+### Checked with the PR [#42014](https://github.com/oven-sh/bun/pull/42014) build
 
 We downloaded the Windows x64 build `bun-windows-x64.zip` from the PR's CI ([Buildkite #113149](https://buildkite.com/bun/bun/builds/113149)). Its SHA-256 matched the listed value, and its version was `1.4.3-canary.1+cfff26e9a` (the PR head commit). With this build, every path pointing above the current directory and `.` pass. **The three paths that name the current directory, `./`, `.\` and `inner/..`, still throw `ENOENT` with this build** (see the table in [How to reproduce](#4-how-to-reproduce)). The cause is in "The ENOENT cause" below.
 
@@ -120,13 +122,16 @@ We downloaded the Windows x64 build `bun-windows-x64.zip` from the PR's CI ([Bui
 
 In the same way, we downloaded the Windows x64 builds of [#40536](https://github.com/oven-sh/bun/pull/40536) and [#42635](https://github.com/oven-sh/bun/pull/42635). Both SHA-256 values matched the listed ones.
 
-| PR | Build | Above the cwd, `.` | `./`, `.\`, `inner/..` |
-|---|---|---|---|
-| #40536 | [Buildkite #106239](https://buildkite.com/bun/bun/builds/106239), `1.4.1-canary.1+8c04559b9` | ✅ | ✅ |
-| #42635 | [Buildkite #115200](https://buildkite.com/bun/bun/builds/115200), `1.4.3-canary.1+891eb8df5` | ✅ | ❌ ENOENT |
-| #42014 | Buildkite #113149, `1.4.3-canary.1+cfff26e9a` | ✅ | ❌ ENOENT |
+| PR | Build | Above the cwd | `.` | `./`, `.\`, `inner/..` |
+|---|---|---|---|---|
+| [#45410](https://github.com/oven-sh/bun/pull/45410) | [Buildkite #126187](https://buildkite.com/bun/bun/builds/126187), `1.4.4-canary.1+94fbd3674` | ❌ EEXIST | ✅ | ✅ |
+| [#40536](https://github.com/oven-sh/bun/pull/40536) | [Buildkite #106239](https://buildkite.com/bun/bun/builds/106239), `1.4.1-canary.1+8c04559b9` | ✅ | ✅ | ✅ |
+| [#42635](https://github.com/oven-sh/bun/pull/42635) | [Buildkite #115200](https://buildkite.com/bun/bun/builds/115200), `1.4.3-canary.1+891eb8df5` | ✅ | ✅ | ❌ ENOENT |
+| [#42014](https://github.com/oven-sh/bun/pull/42014) | [Buildkite #113149](https://buildkite.com/bun/bun/builds/113149), `1.4.3-canary.1+cfff26e9a` | ✅ | ✅ | ❌ ENOENT |
 
-**Of the three PRs, only #40536 fixes every case**. Its build is based on 1.4.1, and the PR has not been updated since 2026-08-26.
+**Of the four PRs, only [#40536](https://github.com/oven-sh/bun/pull/40536) fixes every case**. Its build is based on 1.4.1, and the PR has not been updated since 2026-08-26. [#45410](https://github.com/oven-sh/bun/pull/45410) fixes `.` and the three ENOENT paths, but **the 10 paths above the current directory still throw `EEXIST` with its build** (the PR description says [#42014](https://github.com/oven-sh/bun/pull/42014) covers them). [#42014](https://github.com/oven-sh/bun/pull/42014) and [#42635](https://github.com/oven-sh/bun/pull/42635) are the other way round.
+
+The [#45410](https://github.com/oven-sh/bun/pull/45410) build was checked the same way. It is the PR head commit `94fbd3674`, and the download matched the SHA-1 that Buildkite lists. The SHA-256 of the downloaded `bun-windows-x64.zip` is `8a0b522fb15843a3d38ddd019c179894c961dcfdf79c083d2f02a5c0522b79ee`. The Buildkite build as a whole is marked failed (3 of 184 jobs), but the Windows x64 build job finished and produced the zip.
 
 ### The ENOENT cause (checked in the source)
 
@@ -137,15 +142,16 @@ In Bun 1.4.3 (`c6da4a4d3`), `os_path_kernel32` in `src/runtime/node/types.rs` no
 - mkdir of an empty path fails with ENOENT, which also explains the empty path in the error message
 - The same normalization is why errors for paths above the cwd show the collapsed form (`..\exists`)
 
-A possible fix: if the normalized result is empty, use `.` (move the current `.` special case after the normalization).
+A possible fix: if the normalized result is empty, use `.` (move the current `.` special case after the normalization). PR [#45410](https://github.com/oven-sh/bun/pull/45410) takes a different route: it resolves the empty result to the absolute path of the cwd with `getcwd`. Its description says that mapping to `.` would only move `./` from `ENOENT` to `EEXIST`, because the NT probe cannot resolve `.`. We did not test the `.` variant.
 
 ### What each PR changes, and why it fixes the ENOENT or not
 
 | PR | What it changes | The three ENOENT cases |
 |---|---|---|
-| #40536 | At the entry of recursive mkdir in `node_fs.rs`, joins a relative path onto the cwd (`join_cwd_windows`) before normalizing | ✅ After the join, normalizing gives the absolute path of the cwd instead of an empty string |
-| #42635 | Replaces the existence check, from the NT API to libuv's Win32 stat (`stat_w`) | ❌ The normalization in `os_path_kernel32`, which runs before the check, is unchanged |
-| #42014 | Resolves `.` and `..` in names passed to NT against the directory handle (`nt_object_name_at`) | ❌ Likewise, the normalization in `os_path_kernel32` is unchanged |
+| [#45410](https://github.com/oven-sh/bun/pull/45410) | In `os_path_kernel32` itself: when the normalized relative path is empty and the input was not, uses the cwd from `getcwd`. The exact-`.` special case is removed. `existsSync` uses the same helper | ✅ The empty string never reaches kernel32. ❌ It does not touch the paths above the cwd (the PR leaves them to [#42014](https://github.com/oven-sh/bun/pull/42014)) |
+| [#40536](https://github.com/oven-sh/bun/pull/40536) | At the entry of recursive mkdir in `node_fs.rs`, joins a relative path onto the cwd (`join_cwd_windows`) before normalizing | ✅ After the join, normalizing gives the absolute path of the cwd instead of an empty string |
+| [#42635](https://github.com/oven-sh/bun/pull/42635) | Replaces the existence check, from the NT API to libuv's Win32 stat (`stat_w`) | ❌ The normalization in `os_path_kernel32`, which runs before the check, is unchanged |
+| [#42014](https://github.com/oven-sh/bun/pull/42014) | Resolves `.` and `..` in names passed to NT against the directory handle (`nt_object_name_at`) | ❌ Likewise, the normalization in `os_path_kernel32` is unchanged |
 
 > [!NOTE]
 > **Not verified**: whether it happens on Linux or macOS (the PR says its tests pass on Linux before and after the change).
@@ -171,9 +177,10 @@ deno run -A repro.ts
 | Node.js v26.11.1 | ✅ 18 passed |
 | Deno 2.9.7 | ✅ 18 passed |
 | Bun 1.4.3 | ❌ 4 passed, 14 failed (the 10 paths pointing above the current directory and the 4 naming the current directory) |
-| Bun 1.4.3-canary.1+cfff26e9a (PR #42014 build) | ❌ 15 passed, 3 failed (`./`, `.\`, `inner/..`) |
-| Bun 1.4.3-canary.1+891eb8df5 (PR #42635 build) | ❌ 15 passed, 3 failed (`./`, `.\`, `inner/..`) |
-| Bun 1.4.1-canary.1+8c04559b9 (PR #40536 build) | ✅ 18 passed |
+| Bun 1.4.4-canary.1+94fbd3674 (PR [#45410](https://github.com/oven-sh/bun/pull/45410) build) | ❌ 8 passed, 10 failed (the 10 paths pointing above the current directory) |
+| Bun 1.4.3-canary.1+cfff26e9a (PR [#42014](https://github.com/oven-sh/bun/pull/42014) build) | ❌ 15 passed, 3 failed (`./`, `.\`, `inner/..`) |
+| Bun 1.4.3-canary.1+891eb8df5 (PR [#42635](https://github.com/oven-sh/bun/pull/42635) build) | ❌ 15 passed, 3 failed (`./`, `.\`, `inner/..`) |
+| Bun 1.4.1-canary.1+8c04559b9 (PR [#40536](https://github.com/oven-sh/bun/pull/40536) build) | ✅ 18 passed |
 
 [⌂](../README.md)
 

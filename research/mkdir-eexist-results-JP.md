@@ -2,7 +2,7 @@
 
 Windows の Bun で、カレントより上やカレント自身を指す相対パスに `fs.mkdir(path, { recursive: true })` を使うと EEXIST ・ ENOENT になる。Node.js・Deno と比べた
 
-> 📅 作成: 2026-10-12 / 更新: 2026-10-12
+> 📅 作成: 2026-10-12 / 更新: 2026-10-16
 
 [⌂](../README-JP.md)
 
@@ -75,7 +75,7 @@ NG   fs.mkdir ../exists  EEXIST
 - 畳んでもカレントの中に留まるパス（`inner/../inner` ・ `./inner` ・ `inner`）と絶対パスでは起きない
 - カレント自身を指すパスも失敗する。`.` は `EEXIST: file already exists, mkdir '.'`、末尾に区切りが付く `./` ・ `.\` と、畳むとカレントになる `inner/..` は `ENOENT: no such file or directory, mkdir`（パスが空のまま出る）になる。`inner/.` は通る
 - 同期・Promise・コールバックの 3 つの API すべてで起きる
-- #17332（Bun 1.2.2）に出ていた `warn: internal error: OBJECT_NAME_INVALID` の行は、1.4.3 では出なかった
+- [#17332](https://github.com/oven-sh/bun/issues/17332)（Bun 1.2.2）に出ていた `warn: internal error: OBJECT_NAME_INVALID` の行は、1.4.3 では出なかった
 - 回避策: `path.resolve()` で絶対パスにしてから渡す
 
 ## 3. 既存の issue と修正 PR
@@ -84,11 +84,13 @@ NG   fs.mkdir ../exists  EEXIST
 
 - [oven-sh/bun#17332](https://github.com/oven-sh/bun/issues/17332) Bun crashes when creating duplicate directory in path starting with ../（2025-02-14 作成、OPEN、ラベル `bug` `windows` `node:fs`）。報告は `fs/promises` の `mkdir` だけ
 - [oven-sh/bun#44576](https://github.com/oven-sh/bun/issues/44576) node:fs: recursive mkdir of "." or ".." throws EEXIST on Windows（2026-10-04 作成、OPEN）。`.` ・ `..` の EEXIST だけを扱う
+- [oven-sh/bun#45059](https://github.com/oven-sh/bun/issues/45059) Windows: recursive mkdir of `./`, `.\` or `sub/..` throws ENOENT with an empty path（2026-10-12 作成、OPEN、ラベル `bug` `windows` `node:fs`）。このプロジェクトから投稿した
+- [oven-sh/bun#45410](https://github.com/oven-sh/bun/pull/45410) node:fs: resolve a relative path that normalizes to nothing to the cwd on Windows（2026-10-16 作成、OPEN、レビュー待ち）。説明に `Fixes #45059` とあり、`..` で始まるパスは [#42014](https://github.com/oven-sh/bun/pull/42014) に任せると書いてある
 - [oven-sh/bun#40536](https://github.com/oven-sh/bun/pull/40536) node:fs: return the namespaced absolute first path created for a relative recursive mkdir on Windows（2026-08-26 作成、OPEN）。相対パスをカレントと結合し、`..` を畳んでから処理する
-- [oven-sh/bun#42635](https://github.com/oven-sh/bun/pull/42635) fix(node:fs): preserve Win32 semantics in recursive mkdir checks（2026-09-13 作成、OPEN）。説明に「`child\..` の ENOENT は残り、#40536 が扱う」とある
+- [oven-sh/bun#42635](https://github.com/oven-sh/bun/pull/42635) fix(node:fs): preserve Win32 semantics in recursive mkdir checks（2026-09-13 作成、OPEN）。説明に「`child\..` の ENOENT は残り、[#40536](https://github.com/oven-sh/bun/pull/40536) が扱う」とある
 - [oven-sh/bun#42014](https://github.com/oven-sh/bun/pull/42014) sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at（2026-09-08 作成、OPEN、レビュー待ち）。本文に `Fixes #17332` がある
 
-### PR #42014 が挙げている原因
+### PR [#42014](https://github.com/oven-sh/bun/pull/42014) が挙げている原因
 
 PR の説明によると、次の流れになる。
 
@@ -99,7 +101,7 @@ PR の説明によると、次の流れになる。
 
 この説明は、今回の結果と合う。`inner/../inner` は畳むと `inner` になって通り、`inner/../../exists` は畳むと `..\exists` になって失敗する。
 
-### PR #42014 のソースを読んだ
+### PR [#42014](https://github.com/oven-sh/bun/pull/42014) のソースを読んだ
 
 先頭コミット `cfff26e9a` の差分を読んだ。直しているのは `src/paths/classify.rs` と `src/sys/lib.rs` の 2 つで、残りはテスト。
 
@@ -112,7 +114,7 @@ PR の説明によると、次の流れになる。
 
 読んだ内容は、PR の説明と合う。
 
-### PR #42014 のビルドで確かめた
+### PR [#42014](https://github.com/oven-sh/bun/pull/42014) のビルドで確かめた
 
 PR の CI（[Buildkite #113149](https://buildkite.com/bun/bun/builds/113149)）が作った Windows x64 のビルド `bun-windows-x64.zip` を取得した。SHA-256 は一覧の値と一致し、版は `1.4.3-canary.1+cfff26e9a`（PR の先頭コミット）だった。このビルドで、カレントより上を指す場合と `.` はすべて通った。**カレント自身を指す `./` ・ `.\` ・ `inner/..` の 3 件は、このビルドでも `ENOENT` になる**（[再現の手順](#4-再現の手順) の表）。原因は次の「ENOENT の原因」。
 
@@ -120,13 +122,16 @@ PR の CI（[Buildkite #113149](https://buildkite.com/bun/bun/builds/113149)）�
 
 同じ手順で、[#40536](https://github.com/oven-sh/bun/pull/40536) と [#42635](https://github.com/oven-sh/bun/pull/42635) の Windows x64 のビルドも取得した。どちらも SHA-256 は一覧の値と一致した。
 
-| PR | ビルド | カレントより上・`.` | `./` ・ `.\` ・ `inner/..` |
-|---|---|---|---|
-| #40536 | [Buildkite #106239](https://buildkite.com/bun/bun/builds/106239)、`1.4.1-canary.1+8c04559b9` | ✅ | ✅ |
-| #42635 | [Buildkite #115200](https://buildkite.com/bun/bun/builds/115200)、`1.4.3-canary.1+891eb8df5` | ✅ | ❌ ENOENT |
-| #42014 | Buildkite #113149、`1.4.3-canary.1+cfff26e9a` | ✅ | ❌ ENOENT |
+| PR | ビルド | カレントより上 | `.` | `./` ・ `.\` ・ `inner/..` |
+|---|---|---|---|---|
+| [#45410](https://github.com/oven-sh/bun/pull/45410) | [Buildkite #126187](https://buildkite.com/bun/bun/builds/126187)、`1.4.4-canary.1+94fbd3674` | ❌ EEXIST | ✅ | ✅ |
+| [#40536](https://github.com/oven-sh/bun/pull/40536) | [Buildkite #106239](https://buildkite.com/bun/bun/builds/106239)、`1.4.1-canary.1+8c04559b9` | ✅ | ✅ | ✅ |
+| [#42635](https://github.com/oven-sh/bun/pull/42635) | [Buildkite #115200](https://buildkite.com/bun/bun/builds/115200)、`1.4.3-canary.1+891eb8df5` | ✅ | ✅ | ❌ ENOENT |
+| [#42014](https://github.com/oven-sh/bun/pull/42014) | [Buildkite #113149](https://buildkite.com/bun/bun/builds/113149)、`1.4.3-canary.1+cfff26e9a` | ✅ | ✅ | ❌ ENOENT |
 
-**3 つの PR のうち、すべての場合を直すのは #40536 だけ**。#40536 は 1.4.1 を元にしたビルドで、2026-08-26 から更新がない。
+**4 つの PR のうち、すべての場合を直すのは [#40536](https://github.com/oven-sh/bun/pull/40536) だけ**。[#40536](https://github.com/oven-sh/bun/pull/40536) は 1.4.1 を元にしたビルドで、2026-08-26 から更新がない。[#45410](https://github.com/oven-sh/bun/pull/45410) は `.` と ENOENT の 3 件を直すが、**カレントより上を指す 10 件は、このビルドでも `EEXIST` のまま**（PR の説明は、これを [#42014](https://github.com/oven-sh/bun/pull/42014) が扱うとしている）。[#42014](https://github.com/oven-sh/bun/pull/42014) と [#42635](https://github.com/oven-sh/bun/pull/42635) は、その逆になる。
+
+[#45410](https://github.com/oven-sh/bun/pull/45410) のビルドも同じ手順で調べた。PR の先頭のコミット `94fbd3674` で、取得したものは Buildkite が示す SHA-1 と一致した。取得した `bun-windows-x64.zip` の SHA-256 は `8a0b522fb15843a3d38ddd019c179894c961dcfdf79c083d2f02a5c0522b79ee`。Buildkite のビルド全体は失敗の表示（184 ジョブ中 3 件）だが、Windows x64 のビルドのジョブは終わり、zip が出ていた。
 
 ### ENOENT の原因（ソースで確かめた）
 
@@ -137,15 +142,16 @@ Bun 1.4.3（`c6da4a4d3`）の `src/runtime/node/types.rs` にある `os_path_ker
 - 空のパスの mkdir は ENOENT になる。エラーメッセージのパスが空なのも、これで説明できる
 - カレントより上を指すパスのエラーメッセージに、畳んだ形（`..\exists`）が出るのも、同じ正規化のため
 
-直し方の候補: 正規化の結果が空なら `.` にする（今の `.` の特別扱いを、正規化の後ろへ移す）。
+直し方の候補: 正規化の結果が空なら `.` にする（今の `.` の特別扱いを、正規化の後ろへ移す）。PR [#45410](https://github.com/oven-sh/bun/pull/45410) は別の道を取り、空になった結果を `getcwd` で得たカレントの絶対パスに置き換える。PR の説明は、`.` にすると `./` が `ENOENT` から `EEXIST` に変わるだけだと書いている（NT の確認が `.` を解決できないため）。`.` にする案は、こちらでは試していない。
 
 ### 各 PR のソースと、直る・直らない理由
 
 | PR | 変えているところ | ENOENT の 3 件 |
 |---|---|---|
-| #40536 | `node_fs.rs` の recursive mkdir の入口で、相対パスをカレントと結合して（`join_cwd_windows`）から正規化する | ✅ 結合したあとなので、正規化しても空にならず、カレントの絶対パスになる |
-| #42635 | 既にあるかの確認を、NT の API から libuv の Win32 の stat（`stat_w`）に替える | ❌ 確認の前の、`os_path_kernel32` の正規化は変えていない |
-| #42014 | NT に渡す名前の `.` ・ `..` を、フォルダのハンドルを基準に解決する（`nt_object_name_at`） | ❌ 同じく、`os_path_kernel32` の正規化は変えていない |
+| [#45410](https://github.com/oven-sh/bun/pull/45410) | `os_path_kernel32` そのものを変える。正規化した相対パスが空で、元の入力が空でないとき、`getcwd` で得たカレントを使う。ちょうど `.` だけの特別扱いは外す。`existsSync` も同じ関数を通る | ✅ 空の文字列が kernel32 に渡らない。❌ カレントより上を指すパスには手を付けていない（PR は [#42014](https://github.com/oven-sh/bun/pull/42014) に任せている） |
+| [#40536](https://github.com/oven-sh/bun/pull/40536) | `node_fs.rs` の recursive mkdir の入口で、相対パスをカレントと結合して（`join_cwd_windows`）から正規化する | ✅ 結合したあとなので、正規化しても空にならず、カレントの絶対パスになる |
+| [#42635](https://github.com/oven-sh/bun/pull/42635) | 既にあるかの確認を、NT の API から libuv の Win32 の stat（`stat_w`）に替える | ❌ 確認の前の、`os_path_kernel32` の正規化は変えていない |
+| [#42014](https://github.com/oven-sh/bun/pull/42014) | NT に渡す名前の `.` ・ `..` を、フォルダのハンドルを基準に解決する（`nt_object_name_at`） | ❌ 同じく、`os_path_kernel32` の正規化は変えていない |
 
 > [!NOTE]
 > **確かめていないこと**: Linux ・ macOS で起きるか（PR は Linux では修正の前後とも通ると書いている）。
@@ -171,9 +177,10 @@ deno run -A repro.ts
 | Node.js v26.11.1 | ✅ 18 件成功 |
 | Deno 2.9.7 | ✅ 18 件成功 |
 | Bun 1.4.3 | ❌ 4 件成功 ・ 14 件失敗（カレントより上を指す 10 件と、カレント自身を指す 4 件） |
-| Bun 1.4.3-canary.1+cfff26e9a（PR #42014 のビルド） | ❌ 15 件成功 ・ 3 件失敗（`./` ・ `.\` ・ `inner/..`） |
-| Bun 1.4.3-canary.1+891eb8df5（PR #42635 のビルド） | ❌ 15 件成功 ・ 3 件失敗（`./` ・ `.\` ・ `inner/..`） |
-| Bun 1.4.1-canary.1+8c04559b9（PR #40536 のビルド） | ✅ 18 件成功 |
+| Bun 1.4.4-canary.1+94fbd3674（PR [#45410](https://github.com/oven-sh/bun/pull/45410) のビルド） | ❌ 8 件成功 ・ 10 件失敗（カレントより上を指す 10 件） |
+| Bun 1.4.3-canary.1+cfff26e9a（PR [#42014](https://github.com/oven-sh/bun/pull/42014) のビルド） | ❌ 15 件成功 ・ 3 件失敗（`./` ・ `.\` ・ `inner/..`） |
+| Bun 1.4.3-canary.1+891eb8df5（PR [#42635](https://github.com/oven-sh/bun/pull/42635) のビルド） | ❌ 15 件成功 ・ 3 件失敗（`./` ・ `.\` ・ `inner/..`） |
+| Bun 1.4.1-canary.1+8c04559b9（PR [#40536](https://github.com/oven-sh/bun/pull/40536) のビルド） | ✅ 18 件成功 |
 
 [⌂](../README-JP.md)
 

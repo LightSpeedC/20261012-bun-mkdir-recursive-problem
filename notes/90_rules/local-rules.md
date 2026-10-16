@@ -2,7 +2,7 @@
 
 このプロジェクトでだけ通る決めごと。共通ルールと食い違うときは、ここが優先する
 
-> 📅 作成: 2026-10-12 / 更新: 2026-10-12
+> 📅 作成: 2026-10-12 / 更新: 2026-10-16
 
 [⌂](../../README-JP.md)
 
@@ -36,7 +36,7 @@
     - コメント: `repos/oven-sh/bun/issues/<番号>/comments`（新しいコメント）
     - 自分のコメント: `repos/oven-sh/bun/issues/comments/6118179563`（リアクション）
     - 言及: `repos/oven-sh/bun/issues/<番号>/timeline`（ほかの issue ・ PR からの参照）
-- **見ること**: 状態（open ・ closed）、ラベル、新しいコメント、自分のコメントへのリアクションと返信、関わる PR（#42014 ・ #42635 ・ #40536）への言及
+- **見ること**: 状態（open ・ closed）、ラベル、新しいコメント、自分のコメントへのリアクションと返信、関わる PR（[#42014](https://github.com/oven-sh/bun/pull/42014) ・ [#42635](https://github.com/oven-sh/bun/pull/42635) ・ [#40536](https://github.com/oven-sh/bun/pull/40536) ・ [#45410](https://github.com/oven-sh/bun/pull/45410)）への言及
 - **前回との比較**: 確かめた結果を `etc/issue-watch.json` に残し、次の回はそれと比べる
 - **報告するのは変化があったときだけ**。変化がなければ何も言わない。返信や対応が要りそうなら、案を出して指示を待つ（外への書き込みは指示を待つ、は変えない）
 

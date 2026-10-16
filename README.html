@@ -49,7 +49,7 @@ footer .navbar { margin-top: 0; }
 <div class="titlebar"><div class="inner">
 <h1>Bun mkdir recursive EEXIST / ENOENT</h1>
 <p class="lead">On Windows, Bun's fs.mkdir(path, { recursive: true }) throws EEXIST or ENOENT for an existing directory when a relative path points above the current directory or names the current directory itself, compared with Node.js and Deno</p>
-<p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-12</p>
+<p class="date">📅 Created: 2026-10-12 / Updated: 2026-10-16</p>
 </div></div>
 
 <div class="wrap">
@@ -87,6 +87,7 @@ footer .navbar { margin-top: 0; }
 <li><a href="https://github.com/oven-sh/bun/pull/42014">oven-sh/bun#42014</a> — sys(windows): resolve . and .. path components in mkdirat, unlinkat, renameat and exists_at (the fix)</li>
 <li><a href="https://github.com/oven-sh/bun/issues/45059">oven-sh/bun#45059</a> — Windows: recursive mkdir of <code>./</code>, <code>.\</code> or <code>sub/..</code> throws ENOENT with an empty path (filed from this project)</li>
 <li><a href="https://github.com/oven-sh/bun/issues/44576">oven-sh/bun#44576</a> — node:fs: recursive mkdir of "." or ".." throws EEXIST on Windows</li>
+<li><a href="https://github.com/oven-sh/bun/pull/45410">oven-sh/bun#45410</a> — node:fs: resolve a relative path that normalizes to nothing to the cwd on Windows (<code>Fixes #45059</code>. Its build passes the ENOENT cases and <code>.</code>, but the paths above the cwd still throw EEXIST)</li>
 <li><a href="https://github.com/oven-sh/bun/pull/42635">oven-sh/bun#42635</a> — fix(node:fs): preserve Win32 semantics in recursive mkdir checks (says the <code>child\..</code> ENOENT remains)</li>
 <li><a href="https://github.com/oven-sh/bun/pull/40536">oven-sh/bun#40536</a> — node:fs: return the namespaced absolute first path created for a relative recursive mkdir on Windows (its build passes every case, including the ENOENT ones)</li>
 </ul>
