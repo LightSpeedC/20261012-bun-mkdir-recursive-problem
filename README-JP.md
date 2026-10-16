@@ -25,6 +25,7 @@ Windows でテストを流すには（node ・ deno ・ bun が PATH にある�
 
 - [bun#17332 へのコメント](issue/bun-17332-comment-JP.md)
 - [recursive mkdir の ENOENT](issue/bun-mkdir-enoent-issue-JP.md)
+- [bun の PR #45410 と #40536 へのコメント](issue/bun-pr-comments-JP.md)
 
 ## 3. 関連する issue
 

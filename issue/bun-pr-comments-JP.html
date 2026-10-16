@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bun の PR #45410 と #40536 へのコメント</title>
+<style>
+:root {
+	--navy1: #12224d; --navy2: #2f5fbf; --ink: #1c2330; --ink-soft: #4a5568;
+	--line: #d9dfe8; --code-bg: #f4f6fa; --link: #1a4fa0;
+	--accent: var(--navy1); --accent2: var(--navy2); --soft: #f2f5fb;
+}
+body { margin: 0; background: #fff; color: var(--ink); font-size: 15.5px; line-height: 1.85; font-family: "Segoe UI", "Yu Gothic UI", Meiryo, sans-serif; }
+a { color: var(--link, #1a4fa0); background: transparent; }
+.titlebar { background: linear-gradient(135deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; padding: 34px 30px 30px; }
+.titlebar .inner { max-width: 1600px; margin: 0 auto; }
+.titlebar h1 { font-size: 1.8em; margin: 0 0 6px; color: #fff; }
+.titlebar .lead, .titlebar .date { color: #e6ecf8; background: transparent; font-size: 0.92em; margin: 2px 0; }
+.wrap { max-width: 1600px; margin: 0 auto; padding: 0 30px; }
+.navbar { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.navbar a { display: inline-block; padding: 0 9px; border-radius: 6px; background: linear-gradient(100deg, var(--navy1, #12224d), var(--navy2, #2f5fbf)); color: #fff; text-decoration: none; font-weight: 700; }
+.ch01 { --accent: hsl(280,78%,25%); --accent2: hsl(280,58%,55%); --soft: hsl(280,28%,95%); }
+section { margin: 34px 0; padding: 4px 26px 26px; border-radius: 10px; background: linear-gradient(180deg, var(--soft, #f2f5fb), #fff); color: var(--ink); }
+section h1 { margin: 26px 0 20px; padding: 14px 20px; border-radius: 8px; font-size: 1.45em; background: linear-gradient(100deg, var(--accent, #12224d), var(--accent2, #2f5fbf)); color: #fff; box-shadow: 0 3px 10px rgba(0,0,0,0.18); }
+section h2 { margin: 30px 0 12px; padding: 6px 12px; font-size: 1.15em; border-left: 6px solid var(--accent, #12224d); background: linear-gradient(90deg, var(--soft, #f2f5fb), #fff); color: var(--accent, #12224d); }
+code { background: var(--code-bg, #f4f6fa); border: 1px solid var(--line, #d9dfe8); color: #17335f; padding: 0 4px; border-radius: 4px; font-size: 0.9em; }
+pre { padding: 13px 16px; overflow-x: auto; border-left: 5px solid var(--accent2, #2f5fbf); background: linear-gradient(180deg, var(--code-bg, #f4f6fa), #fff); color: var(--ink); }
+pre code { border: none; background: transparent; padding: 0; }
+footer { max-width: 1600px; margin: 0 auto; padding: 18px 30px 30px; }
+footer .navbar { margin-top: 0; }
+</style>
+</head>
+<body>
+<div class="titlebar"><div class="inner">
+<h1>bun の PR #45410 と #40536 へのコメント</h1>
+<p class="lead">oven-sh/bun の修正 PR 2 件に 2026-10-16 に投稿したコメントの本文と日本語訳</p>
+<p class="date">📅 作成: 2026-10-16 / 更新: 2026-10-16</p>
+</div></div>
+
+<div class="wrap">
+<div class="navbar"><a href="../README-JP.html" title="目次">⌂</a><a href="bun-pr-comments.html" title="English">English</a></div>
+
+<section class="ch01" id="ch01">
+<h1>修正 PR へのコメント</h1>
+<p>PR <a href="https://github.com/oven-sh/bun/pull/45410">#45410</a> は、<a href="https://github.com/oven-sh/bun/issues/45059">#45059</a> の <code>ENOENT</code> を直す。そのビルドを調べた結果を #45410 に伝え、<a href="https://github.com/oven-sh/bun/pull/40536">#40536</a> の作者には、この PR が出たことを知らせた。根拠は <a href="bun-mkdir-enoent-issue-JP.html">recursive mkdir の ENOENT</a> にある。</p>
+<h2>#45410 へのコメント</h2>
+<p><a href="https://github.com/oven-sh/bun/pull/45410">oven-sh/bun#45410</a> に 2026-10-16 に投稿した（<a href="https://github.com/oven-sh/bun/pull/45410#issuecomment-6217709790">投稿したコメント</a>）。</p>
+<pre><code class="language-markdown">Checked the PR build on Windows 11 x64 (Buildkite #126187, `1.4.4-canary.1+94fbd3674`).
+
+- `.`, `./`, `.\` and `sub/..`: `mkdirSync`, `fs.promises.mkdir` and callback `fs.mkdir` with `{ recursive: true }` all succeed with no error. This matches Node.js and Deno. `sub/.` still works.
+- Paths that start with `..` after collapsing (`../exists`, `./../exists`, `inner/../../exists`) still throw `EEXIST`. The description says #42014 covers these, so this is expected.
+
+So this PR fixes the `ENOENT` cases reported in #45059, and #42014 fixes the `EEXIST` ones. Neither covers both on its own. I have not tested the two PRs together.
+
+Repro and the full table: [here](https://lightspeedc.com/20261012-bun-mkdir-recursive-problem/issue/bun-mkdir-enoent-issue.html)
+</code></pre>
+<p>訳:</p>
+<pre><code class="language-text">Windows 11 x64 で PR のビルド（Buildkite #126187、1.4.4-canary.1+94fbd3674）を確かめました。
+
+- `.`、`./`、`.\`、`sub/..`: { recursive: true } の mkdirSync、fs.promises.mkdir、コールバックの fs.mkdir が、すべてエラーなしで成功します。Node.js と Deno と同じです。`sub/.` も従来どおり通ります。
+- 畳んだあと `..` で始まるパス（`../exists`、`./../exists`、`inner/../../exists`）は、まだ EEXIST を投げます。説明に #42014 が扱うとあるので、想定どおりです。
+
+つまり、この PR は #45059 の ENOENT を直し、#42014 は EEXIST を直します。どちらか一方では両方を覆えません。2 つの PR を一緒に当てたものは試していません。
+
+再現コードと全体の表: こちら
+</code></pre>
+<h2>#40536 へのコメント</h2>
+<p><a href="https://github.com/oven-sh/bun/pull/40536">oven-sh/bun#40536</a> に 2026-10-16 に投稿した（<a href="https://github.com/oven-sh/bun/pull/40536#issuecomment-6217710980">投稿したコメント</a>）。</p>
+<pre><code class="language-markdown">FYI: the `ENOENT` cases this PR fixes (`./`, `.\` and `sub/..`, see #45059) now also have a separate fix, #45410. It resolves a relative path that normalizes to nothing to the cwd, inside `os_path_kernel32`, and its description mentions this PR.
+
+I checked the #45410 build on Windows 11 x64 (Buildkite #126187, `1.4.4-canary.1+94fbd3674`): those three paths and `.` pass, but paths that start with `..` after collapsing still throw `EEXIST`. The build of this PR (Buildkite #106239, `1.4.1-canary.1+8c04559b9`) passes every case.
+
+Details and the table: [here](https://lightspeedc.com/20261012-bun-mkdir-recursive-problem/issue/bun-mkdir-enoent-issue.html)
+</code></pre>
+<p>訳:</p>
+<pre><code class="language-text">参考までに: この PR が直す ENOENT（`./`、`.\`、`sub/..`。#45059 を参照）には、別の修正 #45410 も出ています。#45410 は、正規化すると空になる相対パスを os_path_kernel32 の中でカレントに解決するもので、説明にこの PR への言及があります。
+
+#45410 のビルドを Windows 11 x64 で確かめました（Buildkite #126187、1.4.4-canary.1+94fbd3674）。その 3 件と `.` は通りますが、畳んだあと `..` で始まるパスは、まだ EEXIST を投げます。この PR のビルド（Buildkite #106239、1.4.1-canary.1+8c04559b9）は、すべての場合が通ります。
+
+詳細と表: こちら
+</code></pre>
+</section>
+</div>
+
+<footer><div class="navbar"><a href="../README-JP.html" title="目次">⌂</a><a href="bun-pr-comments.html" title="English">English</a></div></footer>
+</body>
+</html>
